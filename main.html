@@ -138,6 +138,18 @@
   const btnClearScores = document.getElementById('btnClearScores');
   const btnSfx = document.getElementById('btnSfx');
 
+    // === Correctif : resize() après clic "Lancer"
+  btnStart.addEventListener('click', () => {
+    home.style.display = 'none';
+    gamewrap.style.display = 'flex';
+    resize();
+    requestAnimationFrame(resize);
+  });
+  btnBack.addEventListener('click', () => {
+    gamewrap.style.display = 'none';
+    home.style.display = 'flex';
+    fetchOnlineScores();
+
   // ========= Navigation Accueil <-> Jeu =========
   btnStart.addEventListener('click', () => {
     home.style.display = 'none';
@@ -582,5 +594,6 @@
 </script>
 </body>
 </html>
+
 
 
