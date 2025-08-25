@@ -1,665 +1,138 @@
 
- <!DOCTYPE html>
+
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Coup de pied dans la dinde 🦃</title>
+  <title>Accueil — Coup de pied dans la dinde</title>
   <style>
-    html, body { height: 100%; margin: 0; background:#0e0f13; color:#e8e8e8; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; }
-    .wrap { display:flex; flex-direction:column; height:100%; }
-
-    /* -------- Accueil -------- */
-    #home { display:flex; flex-direction:column; min-height:100%; }
-    .hero { padding: 28px 20px 16px; text-align:center; background:#151720; box-shadow: 0 2px 10px rgba(0,0,0,.4); }
-    .hero h1 { margin:0; font-size: 26px; letter-spacing:.3px; }
-    .rules { max-width: 840px; margin: 16px auto 0; text-align:left; font-size:15px; line-height:1.5; background:#10131a; border:1px solid #232839; border-radius:14px; padding:14px 16px; }
-    .cta { display:flex; justify-content:center; padding: 28px 16px 16px; }
-    .cta button { background:#7b5cff; color:white; border: none; padding:14px 22px; border-radius:14px; cursor:pointer; font-weight:800; font-size:18px; box-shadow:0 6px 18px rgba(123,92,255,.35); }
-    .cta button:hover{ transform:translateY(-1px); }
+    :root { color-scheme: dark; }
+    html, body { height:100%; margin:0; background:#0e0f13; color:#e8e8e8; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;}
+    .wrap { min-height:100%; display:flex; flex-direction:column; }
+    header { padding:22px 16px; text-align:center; background:#151720; box-shadow:0 2px 10px rgba(0,0,0,.4); }
+    header h1{ margin:0; font-size:26px; letter-spacing:.2px; }
+    .rules { max-width:880px; margin:18px auto 0; background:#10131a; border:1px solid #232839; border-radius:14px; padding:16px 18px; font-size:15px; line-height:1.6; }
+    .rules p{ margin:.5rem 0; }
+    .cta { display:flex; justify-content:center; padding:24px 16px; gap:10px; }
+    .cta a { background:#7b5cff; color:#fff; text-decoration:none; padding:14px 22px; border-radius:14px; font-weight:800; font-size:18px; box-shadow:0 6px 18px rgba(123,92,255,.35); }
+    .cta a:hover{ transform:translateY(-1px); }
     .board { margin-top:auto; background:#0c0f15; border-top:1px solid #232839; padding:16px; }
-    .board .inner { max-width: 900px; margin: 0 auto; background:#10131a; border:1px solid #232839; border-radius:14px; padding:12px 14px; }
-    .board h3 { margin: 0 0 10px; font-size:16px }
-    .scores-grid { width:100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-    .scores-grid th, .scores-grid td { padding:8px 10px; border-bottom:1px solid #1e2330; font-size:14px; }
-    .scores-grid th { text-align:left; opacity:.8; }
-    .muted { opacity:.7 }
-
-    /* -------- Jeu -------- */
-    header { padding: 10px 16px; background:#151720; box-shadow: 0 2px 10px rgba(0,0,0,.4); display:flex; align-items:center; gap:12px; }
-    header h1 { font-size: 18px; margin:0; letter-spacing:.2px; }
-    header .controls { margin-left:auto; display:flex; gap:8px; align-items:center; }
-    button { background:#2a2f3a; color:#e8e8e8; border:1px solid #3a4050; padding:8px 12px; border-radius:12px; cursor:pointer; font-weight:600; }
-    button:hover{ background:#343b49; }
-    .hud { display:flex; gap:24px; align-items:center; font-variant-numeric: tabular-nums; }
-    .tag { background:#1c202a; border:1px solid #2a2f3a; padding:6px 10px; border-radius:10px; }
-    #gamewrap { display:none; flex:1; min-height: calc(100vh - 70px); } /* ✅ assure une hauteur visible */
-    #game { flex:1; position:relative; min-height: 420px; }             /* ✅ au moins 420px de haut */
-    #canvas { width:100%; height:100%; display:block; }
-    .panel { position:absolute; top:12px; left:12px; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.08); padding:12px 14px; border-radius:12px; backdrop-filter: blur(6px); max-width: 380px; }
-    .panel h3{ margin:0 0 6px 0; font-size:14px; opacity:.9 }
-    .panel p{ margin:4px 0; font-size:13px; opacity:.9 }
-    .leaderboard { position:absolute; top:12px; right:12px; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.08); padding:12px 14px; border-radius:12px; backdrop-filter: blur(6px); width: 260px; }
-    .leaderboard h3 { margin:0 0 6px; font-size:14px }
-    .leaderboard ol { margin:8px 0 0; padding-left:18px; }
-    .leaderboard li { margin:4px 0; font-variant-numeric: tabular-nums; }
-    .toast { position:absolute; left:50%; transform:translateX(-50%); bottom:14px; background:#1c202a; border:1px solid #2a2f3a; padding:10px 14px; border-radius:10px; opacity:.95; }
+    .board .inner { max-width:880px; margin:0 auto; background:#10131a; border:1px solid #232839; border-radius:14px; padding:12px 14px; }
+    .board h3{ margin:0 0 10px; font-size:16px; }
+    .actions { display:flex; gap:8px; margin-bottom:8px; }
+    .actions button{ background:#2a2f3a; color:#e8e8e8; border:1px solid #3a4050; padding:6px 10px; border-radius:10px; cursor:pointer; }
+    table{ width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+    th,td{ padding:8px 10px; border-bottom:1px solid #1e2330; font-size:14px; text-align:left; }
+    .muted{ opacity:.7; }
+    footer{ text-align:center; opacity:.6; font-size:12px; padding:12px 0 18px;}
   </style>
 </head>
 <body>
 <div class="wrap">
-
-  <!-- ========= PAGE D'ACCUEIL ========= -->
-  <section id="home">
-    <div class="hero">
-      <h1>🦃💥 Coup de pied dans la dinde</h1>
-      <div class="rules">
-        <h3>Règlement</h3>
-        <p>• <b>Phase angle</b> : la <b>flèche</b> oscille rapidement. <b>Clique</b> pour <b>verrouiller</b> l'angle.</p>
-        <p>• <b>Phase puissance</b> : la <b>longueur</b> de la flèche monte/descend. <b>Clique</b> pour <b>verrouiller</b> et tirer.</p>
-        <p>• <b>Trampolines</b> & <b>⚡ Turbo Pads</b> : rebonds puissants.</p>
-        <p>• <b>Densité dynamique</b> : moins d'objets à mesure que la distance augmente.</p>
-        <p>• Objectif : aller le plus loin possible. Entrez votre nom en fin de partie pour le classement.</p>
-      </div>
-      <div class="cta">
-        <button id="btnStart">🎮 Lancer la partie</button>
-      </div>
+  <header>
+    <h1>🦃💥 Coup de pied dans la dinde</h1>
+    <div class="rules">
+      <h3>Règlement</h3>
+      <p>• <b>Phase angle</b> : clique pour verrouiller l’angle.</p>
+      <p>• <b>Phase puissance</b> : clique pour verrouiller la puissance et tirer.</p>
+      <p>• <b>Trampolines</b> : gros rebonds. <b>⚡ Turbo Pads</b> : super boost.</p>
+      <p>• Objectif : aller le plus loin possible. En fin de partie, entre ton nom pour enregistrer le score.</p>
     </div>
-    <div class="board">
-      <div class="inner">
-        <h3>🏆 Meilleures distances (en ligne)</h3>
-        <table class="scores-grid" id="scoresHome">
-          <thead><tr><th>#</th><th>Joueur</th><th>Distance</th><th class="muted">Date</th></tr></thead>
-          <tbody><tr><td colspan="4" class="muted">Chargement…</td></tr></tbody>
-        </table>
-        <p class="muted" id="scoresHomeNotice"></p>
+    <div class="cta">
+      <a href="./game.html">🎮 Lancer la partie</a>
+    </div>
+  </header>
+
+  <section class="board">
+    <div class="inner">
+      <div class="actions">
+        <button id="btnRefresh">🔄 Actualiser</button>
+        <span class="muted" id="status"></span>
       </div>
+      <h3>🏆 Meilleures distances (en ligne)</h3>
+      <table>
+        <thead><tr><th>#</th><th>Joueur</th><th>Distance</th><th class="muted">Date</th></tr></thead>
+        <tbody id="scoresOnline"><tr><td colspan="4" class="muted">Chargement…</td></tr></tbody>
+      </table>
+
+      <h3 style="margin-top:18px">💾 (Secours) Meilleures distances locales</h3>
+      <table>
+        <thead><tr><th>#</th><th>Joueur</th><th>Distance</th><th class="muted">Date</th></tr></thead>
+        <tbody id="scoresLocal"><tr><td colspan="4" class="muted">Aucun score local.</td></tr></tbody>
+      </table>
     </div>
   </section>
 
-  <!-- ========= ÉCRAN DE JEU ========= -->
-  <section id="gamewrap">
-    <header>
-      <h1>🦃💥 Coup de pied dans la dinde</h1>
-      <div class="hud">
-        <div class="tag">État : <span id="state">Ajuster l'angle (clic 1 pour verrouiller)</span></div>
-        <div class="tag">Angle : <span id="angle">—</span>°</div>
-        <div class="tag">Puissance : <span id="power">—</span>%</div>
-        <div class="tag">Distance : <span id="dist">0.000</span> km</div>
-      </div>
-      <div class="controls">
-        <button id="btnSfx">🔊 SFX: ON</button>
-        <button id="btnRestart">Rejouer</button>
-        <button id="btnBack">Accueil</button>
-        <button id="btnClearScores" title="Effacer le classement (local)">Effacer scores</button>
-      </div>
-    </header>
-    <div id="game">
-      <canvas id="canvas"></canvas>
-      <div class="panel">
-        <h3>Comment jouer</h3>
-        <p>• <b>Phase angle</b> : la <b>flèche</b> oscille rapidement. <b>Clique</b> pour <b>verrouiller</b> l'angle.</p>
-        <p>• <b>Phase puissance</b> : la <b>longueur</b> de la flèche monte/descend. <b>Clique</b> pour <b>verrouiller</b> et tirer.</p>
-        <p>• <b>Trampolines</b> & <b>⚡ Turbo Pads</b> : rebonds puissants.</p>
-        <p>• Objectif : faire la plus grande <b>distance</b>.</p>
-      </div>
-      <div class="leaderboard">
-        <h3>🏆 Meilleures distances (local)</h3>
-        <ol id="scores"></ol>
-      </div>
-      <div class="toast" id="toast" style="display:none"></div>
-    </div>
-  </section>
+  <footer>© Ton jeu</footer>
 </div>
 
 <script>
 (function(){
-  // ===== CONFIG JSONBIN =====
-  // ⚠️ REMPLACE ces deux valeurs par les tiennes :
-  const JSONBIN_ID = 68acaf4dd0ea881f4064c95d
-  const JSONBIN_ACCESS_KEY = $2a$10$6Uve79pPXJx3EDKVQbNE7u9CJ/tyOy3KopJPIP0oApjAozRkXC7R2
-  const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${68acaf4dd0ea881f4064c95d}`;
-
-  // ========= Références DOM =========
-  const home = document.getElementById('home');
-  const gamewrap = document.getElementById('gamewrap');
-  const btnStart = document.getElementById('btnStart');
-  const btnBack = document.getElementById('btnBack');
-
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const stateEl = document.getElementById('state');
-  const angleEl = document.getElementById('angle');
-  const powerEl = document.getElementById('power');
-  const distEl = document.getElementById('dist');
-  const toastEl = document.getElementById('toast');
-  const btnRestart = document.getElementById('btnRestart');
-  const btnClearScores = document.getElementById('btnClearScores');
-  const btnSfx = document.getElementById('btnSfx');
-
-  // ========= Navigation Accueil <-> Jeu =========
-  btnStart.addEventListener('click', () => {
-    home.style.display = 'none';
-    gamewrap.style.display = 'flex';
-    resize();                     // ✅ force le redimensionnement maintenant que c’est visible
-    requestAnimationFrame(resize); // ✅ 2e passe au frame suivant
-  });
-  btnBack.addEventListener('click', () => {
-    gamewrap.style.display = 'none';
-    home.style.display = 'flex';
-    fetchOnlineScores(); // refresh classement à l’accueil
-  });
-
-  // Si on arrive sur une ancre qui affiche déjà le jeu (rare)
-  window.addEventListener('load', () => {
-    if (getComputedStyle(gamewrap).display !== 'none') {
-      resize();
-      requestAnimationFrame(resize);
-    }
-  });
-
-  // ========= Classement en ligne via JSONBin =========
-  async function fetchOnlineScores() {
-    const tbody = document.querySelector('#scoresHome tbody');
-    const notice = document.getElementById('scoresHomeNotice');
-    try {
-      if (!JSONBIN_ID || !JSONBIN_ACCESS_KEY) throw new Error('Configure JSONBIN_ID / ACCESS_KEY');
-      const r = await fetch(JSONBIN_URL + "/latest", {
-        headers: { "X-Access-Key": JSONBIN_ACCESS_KEY }
-      });
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      const data = (await r.json()).record;
-      if (!Array.isArray(data) || !data.length) {
-        tbody.innerHTML = `<tr><td colspan="4" class="muted">Aucun score pour l’instant.</td></tr>`;
-        notice.textContent = '';
-        return;
-      }
-      data.sort((a,b) => (b.meters||0) - (a.meters||0));
-      const rows = data.slice(0, 20).map((s, i) => {
-        const km = (Number(s.meters||0)/1000).toFixed(3);
-        const ds = s.date ? new Date(s.date).toLocaleString() : '—';
-        return `<tr><td>${i+1}</td><td>${escapeHtml(s.name||'Anonyme')}</td><td>${km} km</td><td class="muted">${ds}</td></tr>`;
-      }).join('');
-      tbody.innerHTML = rows;
-      notice.textContent = '';
-    } catch (e) {
-      const msg = (e && e.message) ? e.message : 'Erreur réseau';
-      const tbody = document.querySelector('#scoresHome tbody');
-      tbody.innerHTML = `<tr><td colspan="4" class="muted">Classement en ligne indisponible. (${escapeHtml(msg)})</td></tr>`;
-    }
-  }
-
-  async function postOnlineScore(name, meters) {
-    try {
-      if (!JSONBIN_ID || !JSONBIN_ACCESS_KEY) return false; // pas configuré -> skip
-      // 1) Lire l'existant
-      const r = await fetch(JSONBIN_URL + "/latest", {
-        headers: { "X-Access-Key": JSONBIN_ACCESS_KEY }
-      });
-      let data = [];
-      if (r.ok) {
-        data = (await r.json()).record || [];
-      }
-      // 2) Ajouter le nouveau score
-      data.push({ name, meters, date: new Date().toISOString() });
-      // 3) Réécrire le bin
-      const w = await fetch(JSONBIN_URL, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Access-Key": JSONBIN_ACCESS_KEY
-        },
-        body: JSON.stringify(data)
-      });
-      return w.ok;
-    } catch (e) {
-      console.error("Erreur postOnlineScore:", e);
-      return false;
-    }
-  }
-
-  // Charger le classement à l’accueil dès l’ouverture
-  fetchOnlineScores();
-
-  // =========================
-  // 🔧 ZONE DE RÉGLAGES (jeu)
-  // =========================
-  const CFG = {
-    LAUNCH_MAX_SPEED: 300,   // m/s — vitesse de lancement à 100%
-    ANGLE_SPEED_DEG: 140,    // °/s — vitesse d'oscillation de l'angle
-    POWER_SPEED: 200,        // %/s — vitesse d'oscillation de la jauge
-    AIR_DRAG: 0.02,          // traînée de l'air (plus bas = vole plus loin)
-    SECRET_CODE: 'reset1234',// 🔒 code requis pour effacer les scores (local)
-
-    TRAMP: {                 // ⚙️ Trampoline (objet 1)
-      GAP_MIN: 26, GAP_VAR: 95, K_BASE: 1.30, K_VAR: 0.50,
-      MIN_BOUNCE: 18, BOUNCE_MULT: 4.0, HORIZ_BOOST: 1.6
-    },
-
-    TURBO: {                 // ⚡ Turbo Pad (objet 2, plus rare & plus fort)
-      FREQ_FACTOR: 4, BOUNCE_MULT: 8, WIDTH: 3.2, HEIGHT: 0.6
-    },
-
-    DENSITY: { PER_KM: 0.35, MAX_MULT: 5, START_KM: 0 },
-    TRACK_LEN: 70000,
-
-    PHYS: { SUBSTEPS: 3, MAX_VX: 180, MAX_VY: 180, TRAMP_TOUCH_EPS: 0.6 }
+  // ——— RENSEIGNE ICI TES IDENTIFIANTS JSONBIN ———
+  const JB = {
+    BIN_ID: "68acaf4dd0ea881f4064c95d",
+    ACCESS_KEY: "$2a$10$6Uve79pPXJx3EDKVQbNE7u9CJ/tyOy3KopJPIP0oApjAozRkXC7R2"
   };
+  const JB_BASE = `https://api.jsonbin.io/v3/b/${JB.BIN_ID}`;
 
-  // World constants
-  const PX_PER_M = 3;
-  const GRAVITY = 9.81;
-  const DT = 1/60;
-  let AIR_DRAG = CFG.AIR_DRAG;
-  const GROUND_Y = 360;
-  const BOOT_POS = { x: 80, y: GROUND_Y - 30 };
-  const MAX_POWER = 100;
-  const MAX_SPEED = CFG.LAUNCH_MAX_SPEED;
-
-  // Angle bounds & speed
-  const ANGLE_MIN = 10 * Math.PI/180; // 10°
-  const ANGLE_MAX = 75 * Math.PI/180; // 75°
-  const ANGLE_SPEED = CFG.ANGLE_SPEED_DEG * Math.PI/180; // rad/s
-  const POWER_SPEED = CFG.POWER_SPEED; // %/s
-
-  // Camera
-  let camX = 0; let screenShake = 0;
-
-  // Game State
-  let state = 'aim'; // 'aim' | 'power' | 'flying' | 'finished'
-  let angleRad = (ANGLE_MIN+ANGLE_MAX)/2; // oscille en phase 'aim'
-  let angleDir = 1; // +1/-1
-  let powerPct = 0; let powerDir = 1;
-
-  // Turkey physics
-  let turkey = { x: BOOT_POS.x/PX_PER_M, y: (GROUND_Y-28)/PX_PER_M, vx:0, vy:0, radius:0.28, flying:false, stopped:false, sideBounceCount:0 };
-
-  // Objects
-  let tramps = []; // trampolines
-  let turbos = []; // turbo pads (rares)
-
-  // ————— DENSITÉ DYNAMIQUE —————
-  function densityMultForX(xMeters){
-    const km = xMeters/1000;
-    const kmSince = Math.max(0, km - CFG.DENSITY.START_KM);
-    const mult = 1 + kmSince * CFG.DENSITY.PER_KM; // linéaire
-    return Math.min(CFG.DENSITY.MAX_MULT, Math.max(1, mult));
-  }
-
-  function randomizeWorld(seedX=60){
-    tramps = []; turbos = [];
-    const rng = mulberry32(Math.floor(Math.random()*1e9));
-    let x = seedX; const trackLen = CFG.TRACK_LEN;
-    const groundM = GROUND_Y/PX_PER_M - 0.6;
-
-    // Trampolines
-    while (x < trackLen){
-      const gapBase = CFG.TRAMP.GAP_MIN + rng()*CFG.TRAMP.GAP_VAR;
-      const gap = gapBase * densityMultForX(x);
-      x += gap;
-      const w = 2 + rng()*3; const k = CFG.TRAMP.K_BASE + rng()*CFG.TRAMP.K_VAR;
-      tramps.push({ x, y: groundM, w, h: 0.5, k, pulse:0 });
-    }
-
-    // Turbo Pads (plus rares)
-    x = seedX + (CFG.TRAMP.GAP_MIN * CFG.TURBO.FREQ_FACTOR)/2;
-    while (x < trackLen){
-      const gapBase = (CFG.TRAMP.GAP_MIN + rng()*CFG.TRAMP.GAP_VAR) * CFG.TURBO.FREQ_FACTOR;
-      const gap = gapBase * densityMultForX(x);
-      x += gap;
-      turbos.push({ x, y: groundM, w: CFG.TURBO.WIDTH, h: CFG.TURBO.HEIGHT, pulse:0 });
-    }
-  }
-
-  // RNG
-  function mulberry32(a){ return function(){ let t=a+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; } }
-
-  // Resize
-  function resize(){
-    const dpr=Math.min(2,window.devicePixelRatio||1);
-    canvas.width=Math.floor(canvas.clientWidth*dpr);
-    canvas.height=Math.floor(canvas.clientHeight*dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-  window.addEventListener('resize', resize);
-
-  // UI helpers
-  function setState(s){ state=s; stateEl.textContent = s==='aim'?'Ajuster l\'angle (clic 1 pour verrouiller)': s==='power'?'Choisir la puissance (clic 2 pour verrouiller)': s==='flying'?'En vol…':'Terminé'; }
-  function showToast(msg, ms=1400){ toastEl.textContent=msg; toastEl.style.display='block'; clearTimeout(showToast._t); showToast._t=setTimeout(()=>toastEl.style.display='none', ms); }
-  function kmFromMeters(m){ return (m/1000).toFixed(3); }
-
-  // Scores (local)
   const LS_KEY = 'turkey_kick_scores_v1';
-  function loadScores(){ try{ return JSON.parse(localStorage.getItem(LS_KEY))||[] }catch(e){ return [] } }
-  function saveScoreLocal(name, meters){
-    const scores=loadScores();
-    const last = scores[0];
-    if (last && last.name===name && Math.abs(last.meters - meters)<1e-6) { renderScores(); return; }
-    scores.push({ name:name||'Anonyme', meters, date:new Date().toISOString() });
-    scores.sort((a,b)=>b.meters-a.meters);
-    localStorage.setItem(LS_KEY, JSON.stringify(scores.slice(0,20)));
-    renderScores();
-  }
-  function renderScores(){
-    const el=document.getElementById('scores');
-    const scores=loadScores();
-    el.innerHTML = scores.slice(0,8).map(s=>`<li>${(s.meters/1000).toFixed(3)} km — ${escapeHtml(s.name)}</li>`).join('')
-      || '<li>Aucun score pour l\'instant.</li>';
-  }
-  function escapeHtml(str){ return (str||'').toString().replace(/[&<>"]+/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[s])) }
+  const statusEl = document.getElementById('status');
+  const btnRefresh = document.getElementById('btnRefresh');
 
-  // Particles & trail
-  const particles = []; const trail = [];
-  function emitParticles(x, y, n){ for(let i=0;i<n;i++){ particles.push({ x, y, vx:(Math.random()*2-1)*6, vy:-Math.random()*6-2, life:0.6+Math.random()*0.4, age:0 }); } }
-  function updateParticles(dt){ for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.vy += 12*dt; p.x += p.vx*dt*PX_PER_M; p.y += p.vy*dt*PX_PER_M; p.age += dt; if(p.age>p.life) particles.splice(i,1); } }
-  function drawParticles(){ ctx.save(); for(const p of particles){ const a=1-p.age/p.life; ctx.globalAlpha=Math.max(0,a); ctx.beginPath(); ctx.arc(p.x - camX, p.y, 4, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,1)'; ctx.fill(); } ctx.restore(); }
+  function escapeHtml(s){ return (s||'').toString().replace(/[&<>"]+/g, c=>({"&":"&amp;","<":"&lt;"," >":"&gt;","\"":"&quot;"}[c]||c)); }
+  function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY))||[] }catch(e){ return [] } }
 
-  // Audio
-  let audioCtx = null; let sfxOn = true; btnSfx.addEventListener('click',()=>{ sfxOn=!sfxOn; btnSfx.textContent = sfxOn? '🔊 SFX: ON':'🔇 SFX: OFF'; });
-  function ensureAudio(){ if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } }
-  function beep(freq, dur, type='sine', vol=0.2){ if(!sfxOn) return; ensureAudio(); const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+dur); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+dur); }
-  function sfxKick(){ beep(220,0.06,'square',0.25); setTimeout(()=>beep(440,0.08,'sawtooth',0.2),50); }
-  function sfxBounce(){ beep(520,0.05,'triangle',0.18); setTimeout(()=>beep(880,0.06,'triangle',0.18),40); }
-
-  // Input: clicks only
-  canvas.addEventListener('mousedown', onClick);
-  function onClick(){
-    if (state==='aim'){
-      setState('power'); showToast('Puissance : la flèche s\'allonge/rétrécit — clique pour verrouiller'); ensureAudio();
-    } else if (state==='power'){
-      setState('flying'); turkey.flying = true;
-      const v0 = (powerPct/100) * MAX_SPEED;
-      turkey.vx = v0 * Math.cos(angleRad);
-      turkey.vy = v0 * Math.sin(angleRad) * -1;
-      sfxKick(); emitParticles(BOOT_POS.x, BOOT_POS.y, 16); screenShake = 6;
-      showToast('BOUM !');
-    } else if (state==='finished'){
-      reset(true);
+  async function fetchOnlineScores(){
+    statusEl.textContent = 'Chargement des scores en ligne…';
+    try{
+      const res = await fetch(`${JB_BASE}/latest`, {
+        headers: { 'X-Access-Key': JB.ACCESS_KEY }
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const json = await res.json();
+      const arr = Array.isArray(json.record) ? json.record : [];
+      statusEl.textContent = `En ligne : ${arr.length} scores.`;
+      return arr;
+    }catch(e){
+      statusEl.textContent = 'Impossible de charger les scores en ligne.';
+      return null;
     }
   }
 
-  // Oscillators
-  function updateAngleOsc(){
-    if (state==='aim'){
-      angleRad += angleDir * ANGLE_SPEED * DT;
-      if (angleRad >= ANGLE_MAX){ angleRad = ANGLE_MAX; angleDir = -1; }
-      if (angleRad <= ANGLE_MIN){ angleRad = ANGLE_MIN; angleDir = 1; }
-      angleEl.textContent = (angleRad*180/Math.PI).toFixed(0);
+  function renderRows(tbody, arr){
+    if(!arr || arr.length===0){
+      tbody.innerHTML = '<tr><td colspan="4" class="muted">Aucun score.</td></tr>';
+      return;
     }
-  }
-  function updatePowerGauge(){ if (state==='power'){ powerPct += powerDir * POWER_SPEED * DT; if (powerPct >= MAX_POWER){ powerPct=MAX_POWER; powerDir=-1; } if (powerPct <= 0){ powerPct=0; powerDir=1; } powerEl.textContent = powerPct.toFixed(0); } }
-
-  // =========================
-  // PHYSIQUE: sous-pas + détection traversante
-  // =========================
-  function physicsStep(){
-    if (state!=='flying') return;
-
-    const sub = CFG.PHYS.SUBSTEPS;
-    const dt = DT / sub;
-
-    for (let s = 0; s < sub; s++) {
-      const dragX = -AIR_DRAG * turkey.vx;
-      const dragY = -AIR_DRAG * turkey.vy;
-      turkey.vx += dragX * dt;
-      turkey.vy += (GRAVITY + dragY) * dt;
-
-      const prevX = turkey.x, prevY = turkey.y;
-      turkey.x += turkey.vx * dt;
-      turkey.y += turkey.vy * dt;
-
-      const groundM = GROUND_Y / PX_PER_M;
-      const topEps = CFG.PHYS.TRAMP_TOUCH_EPS;
-
-      let hitPad = null; let padType = null; // 'turbo' | 'tramp'
-
-      function crossedTop(y0, y1, topY) {
-        return (y0 < topY + topEps) && (y1 >= topY - topEps);
-      }
-
-      for (const b of turbos) {
-        const topY = b.y - b.h/2;
-        const withinX = turkey.x >= b.x && turkey.x <= b.x + b.w;
-        if (withinX && crossedTop(prevY, turkey.y, topY)) { hitPad = b; padType='turbo'; break; }
-      }
-
-      if (!hitPad) {
-        for (const t of tramps) {
-          const topY = t.y - t.h/2;
-          const withinX = turkey.x >= t.x && turkey.x <= t.x + t.w;
-          if (withinX && crossedTop(prevY, turkey.y, topY)) { hitPad = t; padType='tramp'; break; }
-        }
-      }
-
-      if (hitPad) {
-        turkey.y = (hitPad.y - (hitPad.h||0.5)/2) - turkey.radius;
-
-        if (padType==='turbo') {
-          const M = CFG.TRAMP.BOUNCE_MULT * CFG.TURBO.BOUNCE_MULT;
-          const minB = CFG.TRAMP.MIN_BOUNCE * CFG.TURBO.BOUNCE_MULT;
-
-          turkey.vy = -Math.min(
-            CFG.PHYS.MAX_VY,
-            Math.max(minB, Math.abs(turkey.vy) * (CFG.TRAMP.K_BASE+CFG.TRAMP.K_VAR*0.5) * M)
-          );
-
-          const newVx = Math.max(6, Math.abs(turkey.vx) * (CFG.TRAMP.HORIZ_BOOST * M));
-          turkey.vx = Math.sign(turkey.vx||1) * Math.min(CFG.PHYS.MAX_VX, newVx);
-
-          hitPad.pulse = 1; sfxBounce(); screenShake = 14; emitParticles(turkey.x*PX_PER_M, turkey.y*PX_PER_M, 40);
-          showToast('⚡ TURBO !!');
-        } else {
-          const M = CFG.TRAMP.BOUNCE_MULT;
-          const minB = CFG.TRAMP.MIN_BOUNCE;
-
-          turkey.vy = -Math.min(
-            CFG.PHYS.MAX_VY,
-            Math.max(minB*M, Math.abs(turkey.vy) * hitPad.k * M)
-          );
-
-          const newVx = Math.max(6, Math.abs(turkey.vx) * (CFG.TRAMP.HORIZ_BOOST * M));
-          turkey.vx = Math.sign(turkey.vx||1) * Math.min(CFG.PHYS.MAX_VX, newVx);
-
-          hitPad.pulse = 1; sfxBounce(); screenShake = 12; emitParticles(turkey.x*PX_PER_M, turkey.y*PX_PER_M, 36);
-          showToast('Rebond trampoline !');
-        }
-      }
-      else if (turkey.y >= groundM - turkey.radius) {
-        turkey.y = groundM - turkey.radius;
-
-        const near = findNearAnyPad(turkey.x);
-        if (near && turkey.sideBounceCount < 3){
-          turkey.vy = -Math.max(4, Math.abs(turkey.vy)*0.6);
-          turkey.vx *= 0.985; turkey.sideBounceCount++; screenShake = Math.max(screenShake, 3);
-        } else {
-          turkey.vx *= 0.965;
-          if (Math.abs(turkey.vy) < 0.5 && Math.abs(turkey.vx) < 0.5){
-            finishRun();
-            return; // empêche les sous-pas restants
-          } else {
-            turkey.vy = -Math.abs(turkey.vy) * 0.35; screenShake = Math.max(screenShake, 2);
-          }
-        }
-      }
-    }
+    const rows = arr.slice(0,50).map((s,i)=>{
+      const km = (s.meters/1000).toFixed(3);
+      const ds = s.date? new Date(s.date).toLocaleString() : '—';
+      return `<tr><td>${i+1}</td><td>${escapeHtml(s.name||'Anonyme')}</td><td>${km} km</td><td class="muted">${ds}</td></tr>`;
+    }).join('');
+    tbody.innerHTML = rows;
   }
 
-  function findNearAnyPad(xm){
-    for (const t of tramps){ if (Math.abs(xm - (t.x + t.w/2)) < 3.5) return t; }
-    for (const b of turbos){ if (Math.abs(xm - (b.x + b.w/2)) < 3.5) return b; }
-    return null;
-  }
-
-  async function finishRun(){
-    if (state === 'finished') return;
-    state = 'finished';
-    stateEl.textContent = 'Terminé';
-    turkey.stopped = true;
-    const meters = Math.max(0, turkey.x - (BOOT_POS.x/PX_PER_M));
-    const km = kmFromMeters(meters);
-    distEl.textContent = km;
-    const name = prompt(`Distance: ${km} km\nEntrez votre nom pour enregistrer le score :`) || '';
-    if (name.trim()) {
-      // Enregistre local
-      saveScoreLocal(name.trim(), meters);
-      // Enregistre en ligne
-      const ok = await postOnlineScore(name.trim(), meters);
-      if (ok) showToast('Score enregistré en ligne ✅'); else showToast('Score enregistré en local ✅');
-      // met à jour la page d’accueil si on y revient
-      fetchOnlineScores();
-    }
-  }
-
-  function reset(full=false){
-    setState('aim');
-    powerPct = 0; powerDir = 1; angleRad = (ANGLE_MIN+ANGLE_MAX)/2; angleDir = 1;
-    angleEl.textContent = '—'; powerEl.textContent = '—';
-    turkey = { x: BOOT_POS.x/PX_PER_M, y: (GROUND_Y-28)/PX_PER_M, vx:0, vy:0, radius:0.28, flying:false, stopped:false, sideBounceCount:0 };
-    camX = 0; screenShake = 0; trail.length = 0; particles.length = 0;
-    if (full) randomizeWorld();
-    showToast('Clic 1 = angle • Clic 2 = puissance');
-  }
-
-  // Drawing
-  function draw(){
-    const w = canvas.clientWidth; const h = canvas.clientHeight;
-    if (state==='flying' || state==='finished'){
-      const target = turkey.x*PX_PER_M - w*0.3;
-      camX += (target - camX) * 0.08; camX = Math.max(0, camX);
-    } else { camX += (0 - camX) * 0.08; }
-    if (screenShake>0){ screenShake *= 0.9; } else { screenShake = 0; }
-    const shakeX = (Math.random()*2-1) * screenShake; const shakeY = (Math.random()*2-1) * screenShake;
-
-    ctx.clearRect(0,0,w,h);
-
-    const grad = ctx.createLinearGradient(0,0,0,h); grad.addColorStop(0,'#0f1426'); grad.addColorStop(1,'#0a0c12'); ctx.fillStyle = grad; ctx.fillRect(0,0,w,h);
-
-    const gy = GROUND_Y - 2; ctx.fillStyle = '#203043'; ctx.fillRect(-1000 - camX + shakeX, gy+shakeY, 5000+camX+w+2000, h-gy);
-    ctx.fillStyle = 'rgba(255,255,255,.05)'; for (let i= -1000; i<camX+w+2000; i+=36){ ctx.fillRect(i - camX + shakeX, gy+10+shakeY, 22, 5); }
-
-    drawBoot(BOOT_POS.x - camX + shakeX, BOOT_POS.y + shakeY, angleRad);
-
-    for (const t of tramps){ if (t.pulse>0){ t.pulse*=0.88; } drawTramp(t, shakeX, shakeY); }
-    for (const b of turbos){ if (b.pulse>0){ b.pulse*=0.88; } drawTurbo(b, shakeX, shakeY); }
-
-    const minLen = 60, maxLen = 180; const len = state==='power' ? (minLen + (maxLen-minLen) * (powerPct/100)) : 120;
-    if (state==='aim' || state==='power') drawAimArrow(BOOT_POS.x - camX + shakeX, BOOT_POS.y + shakeY, angleRad, len, state==='power');
-
-    const tx = turkey.x*PX_PER_M - camX + shakeX; const ty = turkey.y*PX_PER_M + shakeY;
-    if (state==='flying' || state==='finished'){ trail.push({x: tx, y: ty}); if (trail.length>48) trail.shift(); }
-    ctx.save(); ctx.globalAlpha = 0.75; for(let i=0;i<trail.length;i++){ const t = i/trail.length; ctx.beginPath(); ctx.arc(trail[i].x, trail[i].y, 2 + t*3, 0, Math.PI*2); ctx.fillStyle = `hsla(${Math.floor(280-180*t)}, 80%, 60%, ${0.15 + 0.5*t})`; ctx.fill(); } ctx.restore();
-    drawTurkey(tx, ty);
-
-    drawParticles();
-
-    const meters = Math.max(0, turkey.x - (BOOT_POS.x/PX_PER_M)); distEl.textContent = kmFromMeters(meters);
-
-    requestAnimationFrame(draw);
-  }
-
-  function drawBoot(x,y,ang){
-    ctx.save();
-    ctx.translate(x,y); ctx.rotate(-ang*0.15);
-    ctx.fillStyle = '#5e3b2f'; roundRect(ctx,-22,-6,44,12,6); ctx.fill();
-    ctx.fillStyle = '#7a4b3d'; roundRect(ctx,-12,-34,24,30,6); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.setLineDash([3,3]); ctx.strokeRect(-10,-32,20,26); ctx.setLineDash([]);
-    ctx.restore();
-  }
-
-  function drawTurkey(x,y){
-    ctx.save(); ctx.translate(x,y);
-    ctx.globalAlpha = 0.25; ctx.beginPath(); ctx.ellipse(0,14,16,6,0,0,Math.PI*2); ctx.fillStyle='#000'; ctx.fill(); ctx.globalAlpha = 1;
-    ctx.beginPath(); ctx.fillStyle = '#a05028'; ctx.ellipse(0,0,16,12,0,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.fillStyle = '#8c4322'; ctx.ellipse(-2,2,8,6,0.6,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.fillStyle = '#c0673a'; ctx.arc(12,-10,7,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.fillStyle = '#f1b11a'; ctx.moveTo(19,-10); ctx.lineTo(26,-7); ctx.lineTo(19,-4); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.fillStyle = '#d63a3a'; ctx.arc(14,-5,3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(14,-12,2.5,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(14,-12,1.2,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#d1902f'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-6,10); ctx.lineTo(-8,16); ctx.moveTo(0,11); ctx.lineTo(0,18); ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawTramp(t, sx=0, sy=0){
-    const x=t.x*PX_PER_M - camX + sx, y=t.y*PX_PER_M + sy; const w=t.w*PX_PER_M, h=t.h*PX_PER_M;
-    ctx.save();
-    for(let i=0;i<=w;i+=Math.max(12, w/4)){
-      ctx.strokeStyle = '#5aa7ff'; ctx.lineWidth=2; ctx.beginPath();
-      ctx.moveTo(x+i, y-h/2-6); ctx.lineTo(x+i-4, y-h/2-2); ctx.lineTo(x+i+4, y-h/2+2); ctx.lineTo(x+i-4, y-h/2+6); ctx.stroke();
-    }
-    const g = ctx.createLinearGradient(x, y-h/2, x, y+h/2); g.addColorStop(0,'#6bd1ff'); g.addColorStop(1,'#2b84c6');
-    ctx.fillStyle = g; roundRect(ctx, x, y - h/2, w, h, 8); ctx.fill();
-    if (t.pulse>0){ ctx.globalAlpha = t.pulse; ctx.strokeStyle = '#c6ecff'; ctx.lineWidth = 6 * t.pulse; ctx.strokeRect(x-4, y - h/2 - 4, w+8, h+8); ctx.globalAlpha=1; }
-    ctx.strokeStyle = '#97d7ff'; ctx.lineWidth = 2; ctx.strokeRect(x-2, y - h/2 - 2, w+4, h+4);
-    ctx.restore();
-  }
-
-  function drawTurbo(b, sx=0, sy=0){
-    const x=b.x*PX_PER_M - camX + sx, y=b.y*PX_PER_M + sy; const w=b.w*PX_PER_M, h=b.h*PX_PER_M;
-    ctx.save();
-    const g = ctx.createLinearGradient(x, y-h/2, x, y+h/2); g.addColorStop(0,'#ffd36b'); g.addColorStop(1,'#f39c12');
-    ctx.fillStyle = g; roundRect(ctx, x, y - h/2, w, h, 10); ctx.fill();
-    ctx.beginPath(); ctx.fillStyle = '#fff';
-    const cx = x + w/2; const cy = y; const zz = Math.min(12, w*0.4);
-    ctx.moveTo(cx-zz*0.3, cy-h*0.3); ctx.lineTo(cx+zz*0.2, cy-h*0.3); ctx.lineTo(cx-zz*0.1, cy+h*0.1);
-    ctx.lineTo(cx+zz*0.3, cy+h*0.1); ctx.lineTo(cx-zz*0.2, cy+h*0.6); ctx.closePath(); ctx.fill();
-    if (b.pulse>0){ ctx.globalAlpha=b.pulse; ctx.strokeStyle='#fff3b0'; ctx.lineWidth=6*b.pulse; ctx.strokeRect(x-5, y-h/2-5, w+10, h+10); ctx.globalAlpha=1; }
-    ctx.strokeStyle='#fff0c2'; ctx.lineWidth=2; ctx.strokeRect(x-2, y-h/2-2, w+4, h+4);
-    ctx.restore();
-  }
-
-  function drawAimArrow(x, y, ang, len, pulsing){
-    ctx.save();
-    ctx.translate(x,y); ctx.rotate(-ang);
-    const w = 10; const bodyLen = Math.max(30, len-18);
-    const g = ctx.createLinearGradient(0,0,bodyLen,0); g.addColorStop(0,'#96f'); g.addColorStop(1,'#6cf');
-    ctx.fillStyle = g; roundRect(ctx, 0, -w/2, bodyLen, w, w/2); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(bodyLen, -w); ctx.lineTo(bodyLen+18, 0); ctx.lineTo(bodyLen, w); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = pulsing ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.55)'; ctx.lineWidth = pulsing ? 2.2 : 1.5; ctx.strokeRect(0, -w/2, bodyLen, w);
-    ctx.restore();
-  }
-
-  function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
-
-  // Boucles
-  function tick(){ updateAngleOsc(); updatePowerGauge(); physicsStep(); updateParticles(DT); requestAnimationFrame(tick); }
-
-  function boot(){ resize(); renderScores(); randomizeWorld(); setState('aim'); showToast('Clic 1 = angle • Clic 2 = puissance'); requestAnimationFrame(draw); requestAnimationFrame(tick); }
-  btnRestart.addEventListener('click', ()=>reset(true));
-
-  // Effacer scores (local) — code secret
-  btnClearScores.addEventListener('click', ()=>{
-    const code = prompt('Code pour effacer les scores locaux :');
-    if (code === null) return;
-    if ((code||'').toLowerCase() === CFG.SECRET_CODE.toLowerCase()){
-      localStorage.removeItem(LS_KEY); renderScores(); showToast('Scores locaux effacés.');
+  async function refresh(){
+    const online = await fetchOnlineScores();
+    const tbodyOnline = document.getElementById('scoresOnline');
+    if(online) {
+      const sorted = [...online].sort((a,b)=>b.meters-a.meters);
+      renderRows(tbodyOnline, sorted);
     } else {
-      showToast('Code incorrect.');
+      tbodyOnline.innerHTML = '<tr><td colspan="4" class="muted">— hors ligne —</td></tr>';
     }
-  });
+    const local = loadLocal().sort((a,b)=>b.meters-a.meters);
+    renderRows(document.getElementById('scoresLocal'), local);
+  }
 
-  // Raccourci clavier : reset local
-  (function(){
-    let buf = "";
-    window.addEventListener('keydown', (e)=>{
-      if (e.key && e.key.length === 1) {
-        buf = (buf + e.key.toLowerCase()).slice(-16);
-        if (buf.includes(CFG.SECRET_CODE.toLowerCase())) {
-          localStorage.removeItem(LS_KEY);
-          renderScores();
-          showToast('Scores locaux réinitialisés (code)');
-          buf = "";
-        }
-      }
-    });
-  })();
-
-  // Lancer le jeu
-  boot();
-
+  btnRefresh.addEventListener('click', refresh);
+  refresh();
 })();
 </script>
 </body>
 </html>
+
 
 
 
