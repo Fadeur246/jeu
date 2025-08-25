@@ -34,7 +34,7 @@
     <div class="controls">
       <button id="btnSfx">🔊 SFX: ON</button>
       <button id="btnRestart">Rejouer</button>
-      <a href="./index.html"><button type="button">Accueil</button></a>
+      <button id="btnHome" type="button">Accueil</button>
       <button id="btnClearScores" title="Effacer le classement (local)">Effacer scores</button>
     </div>
   </header>
@@ -413,6 +413,12 @@
   });
   (function(){ let buf=""; window.addEventListener('keydown',(e)=>{ if (e.key && e.key.length===1){ buf=(buf+e.key.toLowerCase()).slice(-16); if (buf.includes(CFG.SECRET_CODE.toLowerCase())){ localStorage.removeItem(LS_KEY); showToast('Scores locaux réinitialisés (code)'); buf=""; } } }); })();
 
+    document.getElementById('btnHome').addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.location.href = 'index.html'; // renvoie vers la page d’accueil
+  });
+  
   boot();
 })();
 </script>
