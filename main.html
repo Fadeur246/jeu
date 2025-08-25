@@ -9,6 +9,24 @@
   <style>
     html, body { height: 100%; margin: 0; background:#0e0f13; color:#e8e8e8; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; }
     .wrap { display:flex; flex-direction:column; height:100%; }
+
+    /* -------- Accueil -------- */
+    #home { display:flex; flex-direction:column; min-height:100%; }
+    .hero { padding: 28px 20px 16px; text-align:center; background:#151720; box-shadow: 0 2px 10px rgba(0,0,0,.4); }
+    .hero h1 { margin:0; font-size: 26px; letter-spacing:.3px; }
+    .rules { max-width: 840px; margin: 16px auto 0; text-align:left; font-size:15px; line-height:1.5; background:#10131a; border:1px solid #232839; border-radius:14px; padding:14px 16px; }
+    .cta { display:flex; justify-content:center; padding: 28px 16px 16px; }
+    .cta button { background:#7b5cff; color:white; border: none; padding:14px 22px; border-radius:14px; cursor:pointer; font-weight:800; font-size:18px; box-shadow:0 6px 18px rgba(123,92,255,.35); }
+    .cta button:hover{ transform:translateY(-1px); }
+    .board { margin-top:auto; background:#0c0f15; border-top:1px solid #232839; padding:16px; }
+    .board .inner { max-width: 900px; margin: 0 auto; background:#10131a; border:1px solid #232839; border-radius:14px; padding:12px 14px; }
+    .board h3 { margin: 0 0 10px; font-size:16px }
+    .scores-grid { width:100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    .scores-grid th, .scores-grid td { padding:8px 10px; border-bottom:1px solid #1e2330; font-size:14px; }
+    .scores-grid th { text-align:left; opacity:.8; }
+    .muted { opacity:.7 }
+
+    /* -------- Jeu -------- */
     header { padding: 10px 16px; background:#151720; box-shadow: 0 2px 10px rgba(0,0,0,.4); display:flex; align-items:center; gap:12px; }
     header h1 { font-size: 18px; margin:0; letter-spacing:.2px; }
     header .controls { margin-left:auto; display:flex; gap:8px; align-items:center; }
@@ -16,6 +34,7 @@
     button:hover{ background:#343b49; }
     .hud { display:flex; gap:24px; align-items:center; font-variant-numeric: tabular-nums; }
     .tag { background:#1c202a; border:1px solid #2a2f3a; padding:6px 10px; border-radius:10px; }
+    #gamewrap { display:none; flex:1; }
     #game { flex:1; position:relative; }
     #canvas { width:100%; height:100%; display:block; }
     .panel { position:absolute; top:12px; left:12px; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.08); padding:12px 14px; border-radius:12px; backdrop-filter: blur(6px); max-width: 380px; }
@@ -30,41 +49,84 @@
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>🦃💥 Coup de pied dans la dinde</h1>
-    <div class="hud">
-      <div class="tag">État : <span id="state">Ajuster l'angle (clic 1 pour verrouiller)</span></div>
-      <div class="tag">Angle : <span id="angle">—</span>°</div>
-      <div class="tag">Puissance : <span id="power">—</span>%</div>
-      <div class="tag">Distance : <span id="dist">0.000</span> km</div>
+
+  <!-- ========= PAGE D'ACCUEIL ========= -->
+  <section id="home">
+    <div class="hero">
+      <h1>🦃💥 Coup de pied dans la dinde</h1>
+      <div class="rules">
+        <h3>Règlement</h3>
+        <p>• <b>Phase angle</b> : la <b>flèche</b> oscille rapidement. <b>Clique</b> pour <b>verrouiller</b> l'angle.</p>
+        <p>• <b>Phase puissance</b> : la <b>longueur</b> de la flèche monte/descend. <b>Clique</b> pour <b>verrouiller</b> et tirer.</p>
+        <p>• <b>Trampolines</b> & <b>⚡ Turbo Pads</b> : rebonds puissants.</p>
+        <p>• <b>Densité dynamique</b> : moins d'objets à mesure que la distance augmente.</p>
+        <p>• Objectif : aller le plus loin possible. Entrez votre nom en fin de partie pour le classement.</p>
+      </div>
+      <div class="cta">
+        <button id="btnStart">🎮 Lancer la partie</button>
+      </div>
     </div>
-    <div class="controls">
-      <button id="btnSfx">🔊 SFX: ON</button>
-      <button id="btnRestart">Rejouer</button>
-      <button id="btnClearScores" title="Effacer le classement (local)">Effacer scores</button>
+    <div class="board">
+      <div class="inner">
+        <h3>🏆 Meilleures distances (en ligne)</h3>
+        <table class="scores-grid" id="scoresHome">
+          <thead><tr><th>#</th><th>Joueur</th><th>Distance</th><th class="muted">Date</th></tr></thead>
+        <tbody><tr><td colspan="4" class="muted">Chargement…</td></tr></tbody>
+        </table>
+        <p class="muted" id="scoresHomeNotice"></p>
+      </div>
     </div>
-  </header>
-  <div id="game">
-    <canvas id="canvas"></canvas>
-    <div class="panel">
-      <h3>Comment jouer</h3>
-      <p>• <b>Phase angle</b> : la <b>flèche</b> oscille rapidement. <b>Clique</b> pour <b>verrouiller</b> l'angle.</p>
-      <p>• <b>Phase puissance</b> : la <b>longueur</b> de la flèche monte/descend. <b>Clique</b> pour <b>verrouiller</b> et tirer.</p>
-      <p>• <b>Trampolines</b> : rebond fort.</p>
-      <p>• <b>⚡ Turbo Pads</b> (rares) : rebond / accélération <b>beaucoup</b> plus puissants.</p>
-      <p>• <b>Densité dynamique</b> : moins d'objets à mesure que la distance augmente.</p>
-      <p>• Objectif : faire la plus grande <b>distance</b>. En fin de partie, entrez votre nom pour le classement.</p>
+  </section>
+
+  <!-- ========= ÉCRAN DE JEU ========= -->
+  <section id="gamewrap">
+    <header>
+      <h1>🦃💥 Coup de pied dans la dinde</h1>
+      <div class="hud">
+        <div class="tag">État : <span id="state">Ajuster l'angle (clic 1 pour verrouiller)</span></div>
+        <div class="tag">Angle : <span id="angle">—</span>°</div>
+        <div class="tag">Puissance : <span id="power">—</span>%</div>
+        <div class="tag">Distance : <span id="dist">0.000</span> km</div>
+      </div>
+      <div class="controls">
+        <button id="btnSfx">🔊 SFX: ON</button>
+        <button id="btnRestart">Rejouer</button>
+        <button id="btnBack">Accueil</button>
+        <button id="btnClearScores" title="Effacer le classement (local)">Effacer scores</button>
+      </div>
+    </header>
+    <div id="game">
+      <canvas id="canvas"></canvas>
+      <div class="panel">
+        <h3>Comment jouer</h3>
+        <p>• <b>Phase angle</b> : la <b>flèche</b> oscille rapidement. <b>Clique</b> pour <b>verrouiller</b> l'angle.</p>
+        <p>• <b>Phase puissance</b> : la <b>longueur</b> de la flèche monte/descend. <b>Clique</b> pour <b>verrouiller</b> et tirer.</p>
+        <p>• <b>Trampolines</b> & <b>⚡ Turbo Pads</b> : rebonds puissants.</p>
+        <p>• Objectif : faire la plus grande <b>distance</b>.</p>
+      </div>
+      <div class="leaderboard">
+        <h3>🏆 Meilleures distances (local)</h3>
+        <ol id="scores"></ol>
+      </div>
+      <div class="toast" id="toast" style="display:none"></div>
     </div>
-    <div class="leaderboard">
-      <h3>🏆 Meilleures distances</h3>
-      <ol id="scores"></ol>
-    </div>
-    <div class="toast" id="toast" style="display:none"></div>
-  </div>
+  </section>
 </div>
 
 <script>
 (function(){
+  // ===== CONFIG JSONBIN =====
+  // REMPLACE ces deux valeurs :
+  const JSONBIN_ID = 68acaf4dd0ea881f4064c95d
+  const JSONBIN_ACCESS_KEY = $2a$10$6Uve79pPXJx3EDKVQbNE7u9CJ/tyOy3KopJPIP0oApjAozRkXC7R2
+  const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${68acaf4dd0ea881f4064c95d}`;
+
+  // ========= Références DOM (accueil + jeu) =========
+  const home = document.getElementById('home');
+  const gamewrap = document.getElementById('gamewrap');
+  const btnStart = document.getElementById('btnStart');
+  const btnBack = document.getElementById('btnBack');
+
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   const stateEl = document.getElementById('state');
@@ -76,88 +138,117 @@
   const btnClearScores = document.getElementById('btnClearScores');
   const btnSfx = document.getElementById('btnSfx');
 
+  // ========= Navigation Accueil <-> Jeu =========
+  btnStart.addEventListener('click', () => {
+    home.style.display = 'none';
+    gamewrap.style.display = 'flex';
+  });
+  btnBack.addEventListener('click', () => {
+    gamewrap.style.display = 'none';
+    home.style.display = 'flex';
+    fetchOnlineScores(); // refresh classement à l’accueil
+  });
+
+  // ========= Classement en ligne via JSONBin =========
+  async function fetchOnlineScores() {
+    const tbody = document.querySelector('#scoresHome tbody');
+    const notice = document.getElementById('scoresHomeNotice');
+    try {
+      const r = await fetch(JSONBIN_URL + "/latest", {
+        headers: { "X-Access-Key": JSONBIN_ACCESS_KEY }
+      });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const data = (await r.json()).record;
+      if (!Array.isArray(data) || !data.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="muted">Aucun score pour l’instant.</td></tr>`;
+        notice.textContent = '';
+        return;
+      }
+      data.sort((a,b) => (b.meters||0) - (a.meters||0));
+      const rows = data.slice(0, 20).map((s, i) => {
+        const km = (Number(s.meters||0)/1000).toFixed(3);
+        const ds = s.date ? new Date(s.date).toLocaleString() : '—';
+        return `<tr><td>${i+1}</td><td>${escapeHtml(s.name||'Anonyme')}</td><td>${km} km</td><td class="muted">${ds}</td></tr>`;
+      }).join('');
+      tbody.innerHTML = rows;
+      notice.textContent = '';
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Classement en ligne indisponible.</td></tr>`;
+      notice.textContent = e.message || 'Erreur réseau';
+    }
+  }
+
+  async function postOnlineScore(name, meters) {
+    try {
+      // 1) Lire l'existant
+      const r = await fetch(JSONBIN_URL + "/latest", {
+        headers: { "X-Access-Key": JSONBIN_ACCESS_KEY }
+      });
+      let data = [];
+      if (r.ok) {
+        data = (await r.json()).record || [];
+      }
+      // 2) Ajouter le nouveau score
+      data.push({ name, meters, date: new Date().toISOString() });
+      // 3) Réécrire le bin
+      const w = await fetch(JSONBIN_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Access-Key": JSONBIN_ACCESS_KEY
+        },
+        body: JSON.stringify(data)
+      });
+      return w.ok;
+    } catch (e) {
+      console.error("Erreur postOnlineScore:", e);
+      return false;
+    }
+  }
+
+  // Charger le classement à l’accueil dès l’ouverture
+  fetchOnlineScores();
+
   // =========================
-  // 🔧 ZONE DE RÉGLAGES
+  // 🔧 ZONE DE RÉGLAGES (jeu)
   // =========================
   const CFG = {
-    LAUNCH_MAX_SPEED: 300,   // m/s — vitesse de lancement à 100%
-    ANGLE_SPEED_DEG: 140,    // °/s — vitesse d'oscillation de l'angle
-    POWER_SPEED: 200,        // %/s — vitesse d'oscillation de la jauge
-    AIR_DRAG: 0.02,          // traînée de l'air (plus bas = vole plus loin)
-    SECRET_CODE: 'reset1234',// 🔒 code requis pour effacer les scores
-
-    TRAMP: {                 // ⚙️ Trampoline (objet 1)
-      GAP_MIN: 26,           // m — espacement mini (≈)
-      GAP_VAR: 95,           // m — espacement aléatoire (≈)
-      K_BASE: 1.30,          // raideur moyenne
-      K_VAR: 0.50,           // dispersion raideur
-      MIN_BOUNCE: 18,        // m/s — rebond vertical minimum de base
-      BOUNCE_MULT: 4.0,      // multiplicateur global du rebond trampoline
-      HORIZ_BOOST: 1.6       // boost horizontal de base (×)
-    },
-
-    TURBO: {                 // ⚡ Turbo Pad (objet 2, plus rare & plus fort)
-      FREQ_FACTOR: 4,        // 4 = 4x moins fréquent que les trampolines
-      BOUNCE_MULT: 8,        // 8 = 8x plus fort que le trampoline
-      WIDTH: 3.2,            // m — largeur visuelle
-      HEIGHT: 0.6            // m — hauteur visuelle
-    },
-
-    // 📉 Densité décroissante avec la distance :
-    DENSITY: {
-      PER_KM: 0.35,          // +35% d'écart par km
-      MAX_MULT: 5,           // jusqu'à 5× moins d'objets
-      START_KM: 0            // dès 0 km (mets 1 pour commencer après 1 km)
-    },
-
-    TRACK_LEN: 70000,        // longueur du parcours (m)
-
-    PHYS: {
-      SUBSTEPS: 3,           // sous-pas par frame (anti-tunneling)
-      MAX_VX: 180,           // m/s max horizontal
-      MAX_VY: 180,           // m/s max vertical
-      TRAMP_TOUCH_EPS: 0.6   // tolérance verticale (m) sur le top du pad
-    }
+    LAUNCH_MAX_SPEED: 300,
+    ANGLE_SPEED_DEG: 140,
+    POWER_SPEED: 200,
+    AIR_DRAG: 0.02,
+    SECRET_CODE: 'reset1234',
+    TRAMP: { GAP_MIN: 26, GAP_VAR: 95, K_BASE: 1.30, K_VAR: 0.50, MIN_BOUNCE: 18, BOUNCE_MULT: 4.0, HORIZ_BOOST: 1.6 },
+    TURBO: { FREQ_FACTOR: 4, BOUNCE_MULT: 8, WIDTH: 3.2, HEIGHT: 0.6 },
+    DENSITY: { PER_KM: 0.35, MAX_MULT: 5, START_KM: 0 },
+    TRACK_LEN: 70000,
+    PHYS: { SUBSTEPS: 3, MAX_VX: 180, MAX_VY: 180, TRAMP_TOUCH_EPS: 0.6 }
   };
-  // =========================
 
-  // World constants
-  const PX_PER_M = 3;         // 3 px = 1 m
-  const GRAVITY = 9.81;       // m/s^2
-  const DT = 1/60;            // s
+  const PX_PER_M = 3, GRAVITY = 9.81, DT = 1/60;
   let AIR_DRAG = CFG.AIR_DRAG;
-  const GROUND_Y = 360;       // px
+  const GROUND_Y = 360;
   const BOOT_POS = { x: 80, y: GROUND_Y - 30 };
-  const MAX_POWER = 100;      // %
-  const MAX_SPEED = CFG.LAUNCH_MAX_SPEED; // m/s
+  const MAX_POWER = 100, MAX_SPEED = CFG.LAUNCH_MAX_SPEED;
 
-  // Angle bounds & speed
-  const ANGLE_MIN = 10 * Math.PI/180; // 10°
-  const ANGLE_MAX = 75 * Math.PI/180; // 75°
-  const ANGLE_SPEED = CFG.ANGLE_SPEED_DEG * Math.PI/180; // rad/s
-  const POWER_SPEED = CFG.POWER_SPEED; // %/s
+  const ANGLE_MIN = 10 * Math.PI/180, ANGLE_MAX = 75 * Math.PI/180;
+  const ANGLE_SPEED = CFG.ANGLE_SPEED_DEG * Math.PI/180;
+  const POWER_SPEED = CFG.POWER_SPEED;
 
-  // Camera
-  let camX = 0; let screenShake = 0;
+  let camX = 0, screenShake = 0;
 
-  // Game State
-  let state = 'aim'; // 'aim' | 'power' | 'flying' | 'finished'
-  let angleRad = (ANGLE_MIN+ANGLE_MAX)/2; // oscille en phase 'aim'
-  let angleDir = 1; // +1/-1
-  let powerPct = 0; let powerDir = 1;
+  let state = 'aim';
+  let angleRad = (ANGLE_MIN+ANGLE_MAX)/2, angleDir = 1;
+  let powerPct = 0, powerDir = 1;
 
-  // Turkey physics
   let turkey = { x: BOOT_POS.x/PX_PER_M, y: (GROUND_Y-28)/PX_PER_M, vx:0, vy:0, radius:0.28, flying:false, stopped:false, sideBounceCount:0 };
 
-  // Objects
-  let tramps = []; // trampolines
-  let turbos = []; // turbo pads (rares)
+  let tramps = [], turbos = [];
 
-  // ————— DENSITÉ DYNAMIQUE —————
   function densityMultForX(xMeters){
     const km = xMeters/1000;
     const kmSince = Math.max(0, km - CFG.DENSITY.START_KM);
-    const mult = 1 + kmSince * CFG.DENSITY.PER_KM; // linéaire
+    const mult = 1 + kmSince * CFG.DENSITY.PER_KM;
     return Math.min(CFG.DENSITY.MAX_MULT, Math.max(1, mult));
   }
 
@@ -167,7 +258,6 @@
     let x = seedX; const trackLen = CFG.TRACK_LEN;
     const groundM = GROUND_Y/PX_PER_M - 0.6;
 
-    // Trampolines
     while (x < trackLen){
       const gapBase = CFG.TRAMP.GAP_MIN + rng()*CFG.TRAMP.GAP_VAR;
       const gap = gapBase * densityMultForX(x);
@@ -176,7 +266,6 @@
       tramps.push({ x, y: groundM, w, h: 0.5, k, pulse:0 });
     }
 
-    // Turbo Pads (plus rares)
     x = seedX + (CFG.TRAMP.GAP_MIN * CFG.TURBO.FREQ_FACTOR)/2;
     while (x < trackLen){
       const gapBase = (CFG.TRAMP.GAP_MIN + rng()*CFG.TRAMP.GAP_VAR) * CFG.TURBO.FREQ_FACTOR;
@@ -186,21 +275,18 @@
     }
   }
 
-  // RNG
   function mulberry32(a){ return function(){ let t=a+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; } }
 
-  // Resize
   function resize(){ const dpr=Math.min(2,window.devicePixelRatio||1); canvas.width=Math.floor(canvas.clientWidth*dpr); canvas.height=Math.floor(canvas.clientHeight*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);} window.addEventListener('resize', resize);
 
-  // UI helpers
   function setState(s){ state=s; stateEl.textContent = s==='aim'?'Ajuster l\'angle (clic 1 pour verrouiller)': s==='power'?'Choisir la puissance (clic 2 pour verrouiller)': s==='flying'?'En vol…':'Terminé'; }
   function showToast(msg, ms=1400){ toastEl.textContent=msg; toastEl.style.display='block'; clearTimeout(showToast._t); showToast._t=setTimeout(()=>toastEl.style.display='none', ms); }
   function kmFromMeters(m){ return (m/1000).toFixed(3); }
 
-  // Scores
+  // Scores (local fallback)
   const LS_KEY = 'turkey_kick_scores_v1';
   function loadScores(){ try{ return JSON.parse(localStorage.getItem(LS_KEY))||[] }catch(e){ return [] } }
-  function saveScore(name, meters){
+  function saveScoreLocal(name, meters){
     const scores=loadScores();
     const last = scores[0];
     if (last && last.name===name && Math.abs(last.meters - meters)<1e-6) { renderScores(); return; }
@@ -215,22 +301,19 @@
     el.innerHTML = scores.slice(0,8).map(s=>`<li>${(s.meters/1000).toFixed(3)} km — ${escapeHtml(s.name)}</li>`).join('')
       || '<li>Aucun score pour l\'instant.</li>';
   }
-  function escapeHtml(str){ return str.replace(/[&<>"]+/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[s])) }
+  function escapeHtml(str){ return (str||'').toString().replace(/[&<>"]+/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[s])) }
 
-  // Particles & trail
   const particles = []; const trail = [];
   function emitParticles(x, y, n){ for(let i=0;i<n;i++){ particles.push({ x, y, vx:(Math.random()*2-1)*6, vy:-Math.random()*6-2, life:0.6+Math.random()*0.4, age:0 }); } }
   function updateParticles(dt){ for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.vy += 12*dt; p.x += p.vx*dt*PX_PER_M; p.y += p.vy*dt*PX_PER_M; p.age += dt; if(p.age>p.life) particles.splice(i,1); } }
   function drawParticles(){ ctx.save(); for(const p of particles){ const a=1-p.age/p.life; ctx.globalAlpha=Math.max(0,a); ctx.beginPath(); ctx.arc(p.x - camX, p.y, 4, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,1)'; ctx.fill(); } ctx.restore(); }
 
-  // Audio
   let audioCtx = null; let sfxOn = true; btnSfx.addEventListener('click',()=>{ sfxOn=!sfxOn; btnSfx.textContent = sfxOn? '🔊 SFX: ON':'🔇 SFX: OFF'; });
   function ensureAudio(){ if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } }
   function beep(freq, dur, type='sine', vol=0.2){ if(!sfxOn) return; ensureAudio(); const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+dur); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+dur); }
   function sfxKick(){ beep(220,0.06,'square',0.25); setTimeout(()=>beep(440,0.08,'sawtooth',0.2),50); }
   function sfxBounce(){ beep(520,0.05,'triangle',0.18); setTimeout(()=>beep(880,0.06,'triangle',0.18),40); }
 
-  // Input: clicks only
   canvas.addEventListener('mousedown', onClick);
   function onClick(){
     if (state==='aim'){
@@ -240,14 +323,12 @@
       const v0 = (powerPct/100) * MAX_SPEED;
       turkey.vx = v0 * Math.cos(angleRad);
       turkey.vy = v0 * Math.sin(angleRad) * -1;
-      sfxKick(); emitParticles(BOOT_POS.x, BOOT_POS.y, 16); screenShake = 6;
-      showToast('BOUM !');
+      sfxKick(); emitParticles(BOOT_POS.x, BOOT_POS.y, 16); screenShake = 6; showToast('BOUM !');
     } else if (state==='finished'){
       reset(true);
     }
   }
 
-  // Oscillators
   function updateAngleOsc(){
     if (state==='aim'){
       angleRad += angleDir * ANGLE_SPEED * DT;
@@ -258,20 +339,15 @@
   }
   function updatePowerGauge(){ if (state==='power'){ powerPct += powerDir * POWER_SPEED * DT; if (powerPct >= MAX_POWER){ powerPct=MAX_POWER; powerDir=-1; } if (powerPct <= 0){ powerPct=0; powerDir=1; } powerEl.textContent = powerPct.toFixed(0); } }
 
-  // =========================
-  // PHYSIQUE: sous-pas + détection traversante
-  // =========================
   function physicsStep(){
     if (state!=='flying') return;
-
-    const sub = CFG.PHYS.SUBSTEPS;
-    const dt = DT / sub;
+    const sub = CFG.PHYS.SUBSTEPS, dt = DT / sub;
 
     for (let s = 0; s < sub; s++) {
       const dragX = -AIR_DRAG * turkey.vx;
       const dragY = -AIR_DRAG * turkey.vy;
       turkey.vx += dragX * dt;
-      turkey.vy += (GRAVITY + dragY) * dt;
+      turkey.vy += (9.81 + dragY) * dt;
 
       const prevX = turkey.x, prevY = turkey.y;
       turkey.x += turkey.vx * dt;
@@ -280,7 +356,7 @@
       const groundM = GROUND_Y / PX_PER_M;
       const topEps = CFG.PHYS.TRAMP_TOUCH_EPS;
 
-      let hitPad = null; let padType = null; // 'turbo' | 'tramp'
+      let hitPad = null; let padType = null;
 
       function crossedTop(y0, y1, topY) {
         return (y0 < topY + topEps) && (y1 >= topY - topEps);
@@ -306,36 +382,22 @@
         if (padType==='turbo') {
           const M = CFG.TRAMP.BOUNCE_MULT * CFG.TURBO.BOUNCE_MULT;
           const minB = CFG.TRAMP.MIN_BOUNCE * CFG.TURBO.BOUNCE_MULT;
-
-          turkey.vy = -Math.min(
-            CFG.PHYS.MAX_VY,
-            Math.max(minB, Math.abs(turkey.vy) * (CFG.TRAMP.K_BASE+CFG.TRAMP.K_VAR*0.5) * M)
-          );
-
+          turkey.vy = -Math.min(CFG.PHYS.MAX_VY, Math.max(minB, Math.abs(turkey.vy) * (CFG.TRAMP.K_BASE+CFG.TRAMP.K_VAR*0.5) * M));
           const newVx = Math.max(6, Math.abs(turkey.vx) * (CFG.TRAMP.HORIZ_BOOST * M));
           turkey.vx = Math.sign(turkey.vx||1) * Math.min(CFG.PHYS.MAX_VX, newVx);
-
           hitPad.pulse = 1; sfxBounce(); screenShake = 14; emitParticles(turkey.x*PX_PER_M, turkey.y*PX_PER_M, 40);
           showToast('⚡ TURBO !!');
         } else {
-          const M = CFG.TRAMP.BOUNCE_MULT;
-          const minB = CFG.TRAMP.MIN_BOUNCE;
-
-          turkey.vy = -Math.min(
-            CFG.PHYS.MAX_VY,
-            Math.max(minB*M, Math.abs(turkey.vy) * hitPad.k * M)
-          );
-
+          const M = CFG.TRAMP.BOUNCE_MULT, minB = CFG.TRAMP.MIN_BOUNCE;
+          turkey.vy = -Math.min(CFG.PHYS.MAX_VY, Math.max(minB*M, Math.abs(turkey.vy) * hitPad.k * M));
           const newVx = Math.max(6, Math.abs(turkey.vx) * (CFG.TRAMP.HORIZ_BOOST * M));
           turkey.vx = Math.sign(turkey.vx||1) * Math.min(CFG.PHYS.MAX_VX, newVx);
-
           hitPad.pulse = 1; sfxBounce(); screenShake = 12; emitParticles(turkey.x*PX_PER_M, turkey.y*PX_PER_M, 36);
           showToast('Rebond trampoline !');
         }
       }
       else if (turkey.y >= groundM - turkey.radius) {
         turkey.y = groundM - turkey.radius;
-
         const near = findNearAnyPad(turkey.x);
         if (near && turkey.sideBounceCount < 3){
           turkey.vy = -Math.max(4, Math.abs(turkey.vy)*0.6);
@@ -343,8 +405,7 @@
         } else {
           turkey.vx *= 0.965;
           if (Math.abs(turkey.vy) < 0.5 && Math.abs(turkey.vx) < 0.5){
-            finishRun();
-            return; // empêche les sous-pas restants
+            finishRun(); return;
           } else {
             turkey.vy = -Math.abs(turkey.vy) * 0.35; screenShake = Math.max(screenShake, 2);
           }
@@ -359,16 +420,21 @@
     return null;
   }
 
-  function finishRun(){
+  async function finishRun(){
     if (state === 'finished') return;
     state = 'finished';
     stateEl.textContent = 'Terminé';
     turkey.stopped = true;
-    const meters = turkey.x - (BOOT_POS.x/PX_PER_M);
+    const meters = Math.max(0, turkey.x - (BOOT_POS.x/PX_PER_M));
     const km = kmFromMeters(meters);
     distEl.textContent = km;
     const name = prompt(`Distance: ${km} km\nEntrez votre nom pour enregistrer le score :`) || '';
-    if (name.trim()) saveScore(name.trim(), meters);
+    if (name.trim()) {
+      saveScoreLocal(name.trim(), meters);                 // local fallback
+      const ok = await postOnlineScore(name.trim(), meters); // en ligne JSONBin
+      if (ok) showToast('Score enregistré en ligne ✅'); else showToast('Score enregistré en local ✅');
+      fetchOnlineScores();
+    }
   }
 
   function reset(full=false){
@@ -381,7 +447,6 @@
     showToast('Clic 1 = angle • Clic 2 = puissance');
   }
 
-  // Drawing
   function draw(){
     const w = canvas.clientWidth; const h = canvas.clientHeight;
     if (state==='flying' || state==='finished'){
@@ -481,24 +546,21 @@
 
   function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 
-  // Boucles
   function tick(){ updateAngleOsc(); updatePowerGauge(); physicsStep(); updateParticles(DT); requestAnimationFrame(tick); }
 
   function boot(){ resize(); renderScores(); randomizeWorld(); setState('aim'); showToast('Clic 1 = angle • Clic 2 = puissance'); requestAnimationFrame(draw); requestAnimationFrame(tick); }
   btnRestart.addEventListener('click', ()=>reset(true));
 
-  // ⚠️ Effacer scores — demande le code secret
   btnClearScores.addEventListener('click', ()=>{
-    const code = prompt('Code pour effacer les scores :');
-    if (code === null) return; // annulé
+    const code = prompt('Code pour effacer les scores locaux :');
+    if (code === null) return;
     if ((code||'').toLowerCase() === CFG.SECRET_CODE.toLowerCase()){
-      localStorage.removeItem(LS_KEY); renderScores(); showToast('Scores effacés.');
+      localStorage.removeItem(LS_KEY); renderScores(); showToast('Scores locaux effacés.');
     } else {
       showToast('Code incorrect.');
     }
   });
 
-  // ——— Code secret clavier (reset1234) ———
   (function(){
     let buf = "";
     window.addEventListener('keydown', (e)=>{
@@ -507,7 +569,7 @@
         if (buf.includes(CFG.SECRET_CODE.toLowerCase())) {
           localStorage.removeItem(LS_KEY);
           renderScores();
-          showToast('Scores réinitialisés (code)');
+          showToast('Scores locaux réinitialisés (code)');
           buf = "";
         }
       }
@@ -515,10 +577,10 @@
   })();
 
   boot();
+
 })();
 </script>
 </body>
 </html>
-
 
 
