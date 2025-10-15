@@ -1,132 +1,61 @@
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accueil — Coup de pied dans la dinde</title>
+  <title>Gameur Fadeur — Accueil</title>
   <style>
     :root { color-scheme: dark; }
-    html, body { height:100%; margin:0; background:#0e0f13; color:#e8e8e8; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;}
-    .wrap { min-height:100%; display:flex; flex-direction:column; }
-    header { padding:22px 16px; text-align:center; background:#151720; box-shadow:0 2px 10px rgba(0,0,0,.4); }
-    header h1{ margin:0; font-size:26px; letter-spacing:.2px; }
-    .rules { max-width:880px; margin:18px auto 0; background:#10131a; border:1px solid #232839; border-radius:14px; padding:16px 18px; font-size:15px; line-height:1.6; }
-    .rules p{ margin:.5rem 0; }
-    .cta { display:flex; justify-content:center; padding:24px 16px; gap:10px; }
-    .cta a { background:#7b5cff; color:#fff; text-decoration:none; padding:14px 22px; border-radius:14px; font-weight:800; font-size:18px; box-shadow:0 6px 18px rgba(123,92,255,.35); }
-    .cta a:hover{ transform:translateY(-1px); }
-    .board { margin-top:auto; background:#0c0f15; border-top:1px solid #232839; padding:16px; }
-    .board .inner { max-width:880px; margin:0 auto; background:#10131a; border:1px solid #232839; border-radius:14px; padding:12px 14px; }
-    .board h3{ margin:0 0 10px; font-size:16px; }
-    .actions { display:flex; gap:8px; margin-bottom:8px; }
-    .actions button{ background:#2a2f3a; color:#e8e8e8; border:1px solid #3a4050; padding:6px 10px; border-radius:10px; cursor:pointer; }
-    table{ width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
-    th,td{ padding:8px 10px; border-bottom:1px solid #1e2330; font-size:14px; text-align:left; }
-    .muted{ opacity:.7; }
-    footer{ text-align:center; opacity:.6; font-size:12px; padding:12px 0 18px;}
+    html,body{height:100%;margin:0;background:#0e0f13;color:#e8e8e8;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;}
+    .wrap{min-height:100%;display:flex;flex-direction:column}
+    header{padding:28px 16px;text-align:center;background:#151720;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+    header h1{margin:0;font-size:32px;letter-spacing:.4px}
+    header p{opacity:.8;margin:8px 0 0}
+    main{flex:1;max-width:980px;margin:22px auto;padding:0 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .card{background:#10131a;border:1px solid #232839;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:12px}
+    .card h3{margin:0;font-size:20px}
+    .muted{opacity:.7}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{background:#2a2f3a;color:#e8e8e8;border:1px solid #3a4050;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:700}
+    .btn.primary{background:#7b5cff;border-color:#7b5cff;box-shadow:0 6px 18px rgba(123,92,255,.35)}
+    .card.disabled{opacity:.5}
+    .badge{display:inline-block;background:#1c202a;border:1px solid #2a2f3a;padding:4px 8px;border-radius:999px;font-size:12px}
+    footer{text-align:center;opacity:.6;font-size:12px;padding:16px 0 22px}
   </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>🦃💥 Coup de pied dans la dinde</h1>
-    <div class="rules">
-      <h3>Règlement</h3>
-      <p>• <b>Phase angle</b> : clique pour verrouiller l’angle.</p>
-      <p>• <b>Phase puissance</b> : clique pour verrouiller la puissance et tirer.</p>
-      <p>• <b>Trampolines</b> : gros rebonds. <b>⚡ Turbo Pads</b> : super boost.</p>
-      <p>• Objectif : aller le plus loin possible. En fin de partie, entre ton nom pour enregistrer le score.</p>
-    </div>
-    <div class="cta">
-      <a href="./game.html">🎮 Lancer la partie</a>
-    </div>
+    <h1>Gameur Fadeur</h1>
+    <p class="muted">Choisis un jeu pour jouer</p>
   </header>
 
-  <section class="board">
-    <div class="inner">
+  <main>
+    <!-- JEU 1 -->
+    <article class="card">
+      <span class="badge">Jeu 1</span>
+      <h3>🦃💥 Coup de pied dans la dinde</h3>
+      <p class="muted">Vise, règle la puissance et envoie la dinde le plus loin possible. Trampolines & turbo pads au menu !</p>
       <div class="actions">
-        <button id="btnRefresh">🔄 Actualiser</button>
-        <span class="muted" id="status"></span>
+        <a class="btn" href="./main.html">📜 Page du jeu</a>
+        <a class="btn primary" href="./game.html">🎮 Lancer</a>
       </div>
-      <h3>🏆 Meilleures distances (en ligne)</h3>
-      <table>
-        <thead><tr><th>#</th><th>Joueur</th><th>Distance</th><th class="muted">Date</th></tr></thead>
-        <tbody id="scoresOnline"><tr><td colspan="4" class="muted">Chargement…</td></tr></tbody>
-      </table>
+    </article>
 
-      <h3 style="margin-top:18px">💾 (Secours) Meilleures distances locales</h3>
-      <table>
-        <thead><tr><th>#</th><th>Joueur</th><th>Distance</th><th class="muted">Date</th></tr></thead>
-        <tbody id="scoresLocal"><tr><td colspan="4" class="muted">Aucun score local.</td></tr></tbody>
-      </table>
-    </div>
-  </section>
+    <!-- JEU 2 (placeholder) -->
+    <article class="card disabled" aria-disabled="true">
+      <span class="badge">Jeu 2</span>
+      <h3>En création</h3>
+      <p class="muted">Bientôt disponible. On le fera après 😉</p>
+      <div class="actions">
+        <span class="btn" style="pointer-events:none">À venir</span>
+      </div>
+    </article>
+  </main>
 
-  <footer>© Ton jeu</footer>
+  <footer>© Gameur Fadeur</footer>
 </div>
-
-<script>
-(function(){
-  // ——— RENSEIGNE ICI TES IDENTIFIANTS JSONBIN ———
-  const JB = {
-    BIN_ID: "68acaf4dd0ea881f4064c95d",
-    ACCESS_KEY: "$2a$10$6Uve79pPXJx3EDKVQbNE7u9CJ/tyOy3KopJPIP0oApjAozRkXC7R2"
-  };
-  const JB_BASE = `https://api.jsonbin.io/v3/b/${JB.BIN_ID}`;
-
-  const LS_KEY = 'turkey_kick_scores_v1';
-  const statusEl = document.getElementById('status');
-  const btnRefresh = document.getElementById('btnRefresh');
-
-  function escapeHtml(s){ return (s||'').toString().replace(/[&<>"]+/g, c=>({"&":"&amp;","<":"&lt;"," >":"&gt;","\"":"&quot;"}[c]||c)); }
-  function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY))||[] }catch(e){ return [] } }
-
-  async function fetchOnlineScores(){
-    statusEl.textContent = 'Chargement des scores en ligne…';
-    try{
-      const res = await fetch(`${JB_BASE}/latest`, {
-        headers: { 'X-Access-Key': JB.ACCESS_KEY }
-      });
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      const json = await res.json();
-      const arr = Array.isArray(json.record) ? json.record : [];
-      statusEl.textContent = `En ligne : ${arr.length} scores.`;
-      return arr;
-    }catch(e){
-      statusEl.textContent = 'Impossible de charger les scores en ligne.';
-      return null;
-    }
-  }
-
-  function renderRows(tbody, arr){
-    if(!arr || arr.length===0){
-      tbody.innerHTML = '<tr><td colspan="4" class="muted">Aucun score.</td></tr>';
-      return;
-    }
-    const rows = arr.slice(0,50).map((s,i)=>{
-      const km = (s.meters/1000).toFixed(3);
-      const ds = s.date? new Date(s.date).toLocaleString() : '—';
-      return `<tr><td>${i+1}</td><td>${escapeHtml(s.name||'Anonyme')}</td><td>${km} km</td><td class="muted">${ds}</td></tr>`;
-    }).join('');
-    tbody.innerHTML = rows;
-  }
-
-  async function refresh(){
-    const online = await fetchOnlineScores();
-    const tbodyOnline = document.getElementById('scoresOnline');
-    if(online) {
-      const sorted = [...online].sort((a,b)=>b.meters-a.meters);
-      renderRows(tbodyOnline, sorted);
-    } else {
-      tbodyOnline.innerHTML = '<tr><td colspan="4" class="muted">— hors ligne —</td></tr>';
-    }
-    const local = loadLocal().sort((a,b)=>b.meters-a.meters);
-    renderRows(document.getElementById('scoresLocal'), local);
-  }
-
-  btnRefresh.addEventListener('click', refresh);
-  refresh();
-})();
-</script>
 </body>
 </html>
