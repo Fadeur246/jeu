@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -52,7 +50,7 @@
   <div class="panel">
     <div class="rules">
       <b>Contrôles :</b> flèches / ZQSD / WASD. Mobile : glisser. —
-      <b>R</b> = réinitialiser, <b>Z</b> = annuler. <br>
+      <b>R</b> = réinitialiser, <b>Z</b> / Retour = annuler. <br>
       Objectif : toutes les caisses ▣ sur les emplacements ●. Astuce : éviter de pousser une caisse dans un coin (sauf si c’est un ●).
     </div>
   </div>
@@ -63,7 +61,7 @@
 <script>
 (function(){
   // # mur, espace vide, . but, $ caisse, * caisse sur but, @ joueur, + joueur sur but
-  // ► Tous ces niveaux ont caisses == buts et départs sans caisse coincée en coin non-but
+  // Pack vérifié : caisses == buts, départs sans caisse coincée en coin non-but
   const LEVELS = [
     // 1
     [
@@ -338,7 +336,6 @@
     const down = y<H-1 && walls[idx(x,y+1)];
     const left = x>0 && walls[idx(x-1,y)];
     const right = x<W-1 && walls[idx(x+1,y)];
-    // coin = (haut||bas) & (gauche||droite)
     return ((up||down) && (left||right)) && !goals[k];
   }
   function checkCornerWarning(){
@@ -407,3 +404,4 @@
 </script>
 </body>
 </html>
+
