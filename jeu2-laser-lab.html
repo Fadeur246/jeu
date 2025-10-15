@@ -1,0 +1,532 @@
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laser Lab — Jeu de réflexion | Gameur Fadeur</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body { height:100%; margin:0; background:#0e0f13; color:#e8e8e8; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; }
+    .wrap{min-height:100%;display:flex;flex-direction:column}
+
+    header{padding:12px 16px;background:#151720;box-shadow:0 2px 10px rgba(0,0,0,.4);display:flex;gap:10px;align-items:center}
+    header h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .btn{background:#2a2f3a;color:#e8e8e8;border:1px solid #3a4050;padding:8px 12px;border-radius:12px;cursor:pointer;text-decoration:none;font-weight:700}
+    .btn:hover{background:#343b49}
+    .btn.primary{background:#7b5cff;border-color:#7b5cff;box-shadow:0 6px 18px rgba(123,92,255,.35)}
+    .spacer{flex:1}
+
+    .hud{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 16px}
+    .tag{background:#1c202a;border:1px solid #2a2f3a;padding:6px 10px;border-radius:10px;font-variant-numeric:tabular-nums}
+
+    .game{flex:1;display:flex;justify-content:center;align-items:center;padding:12px}
+    canvas{background:#0c0f15;border:1px solid #232839;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.25);touch-action:none;max-width:95vw;max-height:72vh}
+
+    .panel{max-width:980px;margin:0 auto 18px;padding:0 16px}
+    .rules{background:#10131a;border:1px solid #232839;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.6}
+    .inv{display:flex;gap:8px;align-items:center}
+    .pill{display:inline-flex;gap:8px;align-items:center;background:#121622;border:1px solid #2a2f3a;padding:8px 12px;border-radius:999px;cursor:pointer}
+    .pill.active{outline:2px solid #7b5cff}
+
+    footer{text-align:center;opacity:.6;font-size:12px;padding:12px 0 18px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="btn" href="./index.html">🏠 Accueil</a>
+    <h1>🔦 Laser Lab — miroirs & casse-tête</h1>
+    <div class="spacer"></div>
+    <button class="btn" id="btnPrev">⟨⟨ Préc.</button>
+    <select class="btn" id="levelSelect" title="Niveau"></select>
+    <button class="btn" id="btnNext">Suiv. ⟩⟩</button>
+    <button class="btn" id="btnUndo" title="Annuler (Z)">↶ Annuler</button>
+    <button class="btn" id="btnReset" title="Recommencer (R)">↺ Réinitialiser</button>
+  </header>
+
+  <div class="hud panel">
+    <div class="tag">Niveau : <span id="labLevel">1</span></div>
+    <div class="tag">Actions : <span id="labMoves">0</span> <span id="labBest" class="muted"></span></div>
+    <div class="inv" id="inventory">
+      <span>Inventaire :</span>
+      <div class="pill" data-tool="mirror">\ / Miroir <b id="qtyMirror">0</b></div>
+      <div class="pill" data-tool="splitter">✶ Diviseur <b id="qtySplit">0</b></div>
+      <div class="pill" data-tool="erase">🧹 Effacer</div>
+    </div>
+  </div>
+
+  <div class="game">
+    <canvas id="cv" width="760" height="760"></canvas>
+  </div>
+
+  <div class="panel">
+    <div class="rules">
+      <b>But :</b> allumer <b>toutes</b> les cibles <b>●</b> en redirigeant le laser de la source <b>🔴</b> avec des miroirs <b>/</b> et <b>\</b>, et des diviseurs <b>✶</b>.
+      <br><bPlacement :</b> tap/clic sur une case vide pour poser l'outil sélectionné. Tap/clic sur un miroir/diviseur pour le <b>faire pivoter</b>. Clic droit = rotation inverse. Sur mobile, <b>appui long</b> = rotation inverse.
+      <br><b>Notation source :</b> dans les grilles, la source orientée est notée <code>R</code>(→), <code>L</code>(←), <code>U</code>(↑), <code>D</code>(↓).
+    </div>
+  </div>
+
+  <footer>© Gameur Fadeur — Laser Lab</footer>
+</div>
+
+<script>
+(function(){
+  // Directions NESO
+  const N=0,E=1,S=2,O=3; const DIRS=[[0,-1],[1,0],[0,1],[-1,0]]; const OPP=[2,3,0,1];
+
+  // Types de cellules
+  const T={ EMPTY:0, WALL:1, SOURCE:2, TARGET:3, MIRROR:4, SPLITTER:5, BLOCK:6 };
+
+  // Pièces modifiables par le joueur
+  const placeable = new Set([T.MIRROR, T.SPLITTER]);
+
+  // ========= NIVEAUX (15) =========
+  // Encodage:
+  //   '.' vide ; '#' mur ; 'T' cible ; '/' '\' miroirs FIXES ; '*' diviseur FIXE ;
+  //   'R','L','U','D' = SOURCE orientée (droite/gauche/haut/bas)
+
+  const LEVELS=[
+    // 1 — Découverte (8x8)
+    { w:8,h:8, inv:{mirror:6, splitter:0}, cells:[
+      '........',
+      '...#....',
+      '..#.#...',
+      '..#..T..',
+      'R.......',
+      '...#....',
+      '........',
+      '........'
+    ]},
+    // 2 — Deux cibles
+    { w:9,h:9, inv:{mirror:9, splitter:0}, cells:[
+      '.........',
+      '..#...T..',
+      '..#......',
+      'R....#...',
+      '.....#...',
+      '...#..#..',
+      '...#..#T.',
+      '.........',
+      '.........'
+    ]},
+    // 3 — Premiers diviseurs
+    { w:10,h:10, inv:{mirror:10, splitter:2}, cells:[
+      '..........',
+      '..#....#..',
+      '..#..T.#..',
+      'R....#....',
+      '....#.....',
+      '....#..T..',
+      '...#......',
+      '......#...',
+      '......#...',
+      '....T.....'
+    ]},
+    // 4 — Labyrinthe doux
+    { w:10,h:10, inv:{mirror:14, splitter:3}, cells:[
+      '.#..#.....',
+      'R...#..#..',
+      '.#..#..#T.',
+      '.#.......#',
+      '..###.#..#',
+      '...#..#..#',
+      '.T.#..#...',
+      '...#..###.',
+      '.#.....T..',
+      '.......#..'
+    ]},
+    // 5 — Difficile
+    { w:12,h:12, inv:{mirror:22, splitter:6}, cells:[
+      'R..#...#....',
+      '.##.#.#..#..T',
+      '.....#....#..',
+      '.#..###..#...',
+      '..T...#..#.#.',
+      '...#..#..#...',
+      '.#..#...##..#',
+      '..#...T..#..#',
+      '...##...#....',
+      '.#..#..##..#.',
+      '...T....#...#',
+      '....#......#.'
+    ]},
+    // 6 — Introduction miroir fixe
+    { w:9,h:9, inv:{mirror:8, splitter:1}, cells:[
+      '.../.....',
+      '..#..T...',
+      'R.#......',
+      '..#..#...',
+      '..#..#...',
+      '...#..#..',
+      '...#..#T.',
+      '.........',
+      '...\..*.'
+    ]},
+    // 7 — Croisements
+    { w:10,h:10, inv:{mirror:12, splitter:2}, cells:[
+      '...#..T...',
+      '.#..../...',
+      'R...#.....',
+      '.#..#..#..',
+      '...#..#..*',
+      '..T.#..#..',
+      '...#..#...',
+      '....#..#..',
+      '...#..#..T',
+      '......\..'
+    ]},
+    // 8 — Double cible opposée
+    { w:10,h:10, inv:{mirror:14, splitter:3}, cells:[
+      'T...#.....',
+      '.#..#..#..',
+      '.#..#..#..',
+      '.#..#..#..',
+      'R...#..../',
+      '.#..#..#..',
+      '.#..#..#..',
+      '.#..#..#..',
+      '.....#...T',
+      '..........'
+    ]},
+    // 9 — Préparation au split obligatoire
+    { w:11,h:11, inv:{mirror:16, splitter:4}, cells:[
+      'T..#....#..',
+      '.#..#..#...',
+      '..#..#..#..',
+      '...#..#..#.',
+      'R..#..#..#.',
+      '...#..#..#.',
+      '.#..#..#...',
+      '..#..#..#..',
+      '...#....#T.',
+      '.#........*',
+      '...../.....'
+    ]},
+    // 10 — Split obligatoire (difficile)
+    { w:12,h:12, inv:{mirror:18, splitter:5}, cells:[
+      '...#..T..#..',
+      '.#..#..#..#.',
+      'R..#..#..#..',
+      '.#..#..#..#.',
+      '..#..#..#..T',
+      '.#..#..#..#.',
+      '...*....../.',
+      '.#..#..#..#.',
+      'T..#..#..#..',
+      '.#..#..#..#.',
+      '..#..#..#..T',
+      '....#....#..'
+    ]},
+    // 11 — Faux couloirs
+    { w:12,h:12, inv:{mirror:20, splitter:6}, cells:[
+      '...#/..#..T.',
+      '.#..#..#..#.',
+      'R..#..#..#..',
+      '.#..#..#..#.',
+      '..#..#..#..T',
+      '.#..#..#..#.',
+      '..../..*..#.',
+      '.#..#..#..#.',
+      'T..#..#..#..',
+      '.#..#..#..#.',
+      '..#..#..#..T',
+      '....#....#..'
+    ]},
+    // 12 — Carrefours piégés
+    { w:12,h:12, inv:{mirror:22, splitter:6}, cells:[
+      'T..#..#..#..',
+      '.#..#..#..#.',
+      'R..#..#..#..',
+      '.#..#..#..#.',
+      '..#..#..#..T',
+      '.#..#..#..#.',
+      '..*..../..#.',
+      '.#..#..#..#.',
+      'T..#..#..#..',
+      '.#..#..#..#.',
+      '..#..#..#..T',
+      '....#....#..'
+    ]},
+    // 13 — Miroirs fixes trompeurs
+    { w:12,h:12, inv:{mirror:24, splitter:7}, cells:[
+      '...#..T./..',
+      '.#..#..#..#',
+      'R..#..#..#.',
+      '.#..#..#..#',
+      '..#..#..#..',
+      '.#..#..#..T',
+      '..*..#..#..',
+      '.#..#..#..#',
+      'T..#..#..#.',
+      '.#..#..#..#',
+      '..#..#..#..',
+      '..../....#.'
+    ]},
+    // 14 — Multiplex dangereux
+    { w:12,h:12, inv:{mirror:24, splitter:8}, cells:[
+      'T..#..#..#..',
+      '.#..#..#..#.',
+      'R..#..#..#..',
+      '.#..#..#..#.',
+      '..#..#..#..T',
+      '.#..#..#..#.',
+      '..*../..*..',
+      '.#..#..#..#.',
+      'T..#..#..#..',
+      '.#..#..#..#.',
+      '..#..#..#..T',
+      '....#....#..'
+    ]},
+    // 15 — Marathon (très corsé)
+    { w:14,h:14, inv:{mirror:34, splitter:12}, cells:[
+      'R...#...#...#..',
+      '.#..#..#..#..#.',
+      '..T.#..#..#..#.',
+      '.#..#..#..#..#.',
+      '..#..#..#..#..T',
+      '.#..#..#..#..#.',
+      '..*..../..*..#.',
+      '.#..#..#..#..#.',
+      'T..#..#..#..#..',
+      '.#..#..#..#..#.',
+      '..#..#..#..#..T',
+      '.#..#..#..#..#.',
+      '...#..T..#..../',
+      '..#....#....#..'
+    ]}
+  ];
+
+  // Parsing des grilles en objets
+  function buildLevel(def){
+    const W=def.w, H=def.h; const cells=new Array(W*H);
+    for(let y=0;y<H;y++){
+      const row=def.cells[y];
+      for(let x=0;x<W;x++){
+        const ch=row[x]||'.';
+        let c = { t: T.EMPTY, rot: 0, dir: 0, locked: false };
+        if (ch === '#') c.t = T.WALL;
+        else if (ch === 'T') c.t = T.TARGET;
+        else if (ch === '/') { c.t = T.MIRROR; c.rot = 0; c.locked = true; }
+        else if (ch === '\\\\') { c.t = T.MIRROR; c.rot = 1; c.locked = true; }
+        else if (ch === '*') { c.t = T.SPLITTER; c.rot = 0; c.locked = true; }
+        else if (ch === 'R') { c.t = T.SOURCE; c.dir = E; }
+        else if (ch === 'L') { c.t = T.SOURCE; c.dir = O; }
+        else if (ch === 'U') { c.t = T.SOURCE; c.dir = N; }
+        else if (ch === 'D') { c.t = T.SOURCE; c.dir = S; }
+
+        // else EMPTY
+        cells[y*W+x]=c;
+      }
+    }
+    return {W,H,cells, inv:{...def.inv}};
+  }
+
+  // État courant
+  let levelIndex=0; let G=null; let moves=0; let undo=[]; let best=null;
+
+  const cv=document.getElementById('cv'); const ctx=cv.getContext('2d');
+  const labLevel=document.getElementById('labLevel'); const labMoves=document.getElementById('labMoves'); const labBest=document.getElementById('labBest');
+  const qtyMirror=document.getElementById('qtyMirror'); const qtySplit=document.getElementById('qtySplit');
+  const sel=document.getElementById('levelSelect');
+
+  // Outils
+  const invEl=document.getElementById('inventory');
+  let tool='mirror';
+  invEl.addEventListener('click', (e)=>{
+    const pill=e.target.closest('.pill'); if(!pill) return; invEl.querySelectorAll('.pill').forEach(p=>p.classList.remove('active')); pill.classList.add('active'); tool=pill.dataset.tool; });
+  invEl.querySelector('[data-tool="mirror"]').classList.add('active');
+
+  // UI boutons
+  document.getElementById('btnReset').addEventListener('click',()=>loadLevel(levelIndex));
+  document.getElementById('btnUndo').addEventListener('click',()=>doUndo());
+  document.getElementById('btnPrev').addEventListener('click',()=>{ if(levelIndex>0) loadLevel(levelIndex-1); });
+  document.getElementById('btnNext').addEventListener('click',()=>{ if(levelIndex<LEVELS.length-1) loadLevel(levelIndex+1); });
+
+  // Sélecteur de niveaux
+  function populateSelect(){ sel.innerHTML=''; LEVELS.forEach((_,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`Niveau ${i+1}`; sel.appendChild(o); }); sel.addEventListener('change',()=>loadLevel(Number(sel.value))); }
+
+  // Persistance meilleur score (minimum d'actions)
+  const LS_KEY='laser_lab_best_v1';
+  function loadBest(i){ try{ const o=JSON.parse(localStorage.getItem(LS_KEY)||'{}'); return (i in o)? o[i] : null; }catch(_){ return null; } }
+  function saveBest(i,val){ try{ const o=JSON.parse(localStorage.getItem(LS_KEY)||'{}'); if(!(i in o) || val<o[i]){ o[i]=val; localStorage.setItem(LS_KEY, JSON.stringify(o)); } }catch(_){} }
+
+  function loadLevel(i){ levelIndex=i; G=buildLevel(LEVELS[i]); moves=0; undo=[]; best=loadBest(i); updateHUD(); sel.value=String(i); fitCanvas(); simulate(); draw(); }
+
+  function updateHUD(){ labLevel.textContent=levelIndex+1; labMoves.textContent=moves; labBest.textContent=best!=null?` (meilleur: ${best})`:''; qtyMirror.textContent=G.inv.mirror; qtySplit.textContent=G.inv.splitter; }
+
+  function idx(x,y){ return y*G.W+x; }
+
+  // Placement/rotation/effacement
+  cv.addEventListener('contextmenu', e=>e.preventDefault());
+  cv.addEventListener('mousedown', (e)=>handleClick(e, e.button===2?-1:1));
+  cv.addEventListener('touchstart', (e)=>{ e.preventDefault(); handleClick(e, +1, true); touchTimer=setTimeout(()=>{ handleClick(e, -1, true); }, 420); }, {passive:false});
+  cv.addEventListener('touchend', ()=>{ if(touchTimer) clearTimeout(touchTimer); });
+  let touchTimer=null;
+
+  function handleClick(ev, rotDir, isTouch){
+    const c=cellFromEvent(ev); if(!c) return; const k=idx(c.x,c.y); const cell=G.cells[k];
+    if(cell.locked) return; // intouchable
+    if(cell.t===T.MIRROR || cell.t===T.SPLITTER){ // rotation
+      cell.rot=(cell.rot+(rotDir||1)+4)%4; moves++; pushUndo({type:'rot',k,rot:rotDir}); simulate(); draw(); checkWin(); return;
+    }
+    if(tool==='erase'){
+      if(cell.t===T.MIRROR){ G.inv.mirror++; pushUndo({type:'erase',k,prev:{...cell}}); G.cells[k]={t:T.EMPTY,rot:0,dir:0,locked:false}; moves++; }
+      else if(cell.t===T.SPLITTER){ G.inv.splitter++; pushUndo({type:'erase',k,prev:{...cell}}); G.cells[k]={t:T.EMPTY,rot:0,dir:0,locked:false}; moves++; }
+      updateHUD(); simulate(); draw(); return;
+    }
+    if(cell.t!==T.EMPTY) return; // pas placeable
+    if(tool==='mirror' && G.inv.mirror>0){
+      G.inv.mirror--; G.cells[k]={t:T.MIRROR, rot:0, dir:0, locked:false}; moves++; pushUndo({type:'place',k});
+    } else if(tool==='splitter' && G.inv.splitter>0){
+      G.inv.splitter--; G.cells[k]={t:T.SPLITTER, rot:0, dir:0, locked:false}; moves++; pushUndo({type:'place',k});
+    }
+    updateHUD(); simulate(); draw(); checkWin();
+  }
+
+  function pushUndo(act){ undo.push(act); if(undo.length>300) undo.shift(); }
+  function doUndo(){ const a=undo.pop(); if(!a) return; if(a.type==='place'){ const c=G.cells[a.k]; if(c.t===T.MIRROR) G.inv.mirror++; if(c.t===T.SPLITTER) G.inv.splitter++; G.cells[a.k]={t:T.EMPTY,rot:0,dir:0,locked:false}; moves=Math.max(0,moves-1); }
+    else if(a.type==='erase'){ G.cells[a.k]=a.prev; if(a.prev.t===T.MIRROR) G.inv.mirror--; if(a.prev.t===T.SPLITTER) G.inv.splitter--; moves=Math.max(0,moves-1); }
+    else if(a.type==='rot'){ const c=G.cells[a.k]; c.rot=(c.rot-(a.rot)+4)%4; moves=Math.max(0,moves-1); }
+    updateHUD(); simulate(); draw(); }
+
+  // ===== Simulation du laser =====
+  let rays=[]; let litTargets=new Set();
+
+  function simulate(){ rays=[]; litTargets.clear();
+    // sources
+    const sources=[]; for(let k=0;k<G.cells.length;k++){ if(G.cells[k].t===T.SOURCE) sources.push(k); }
+    const visited=new Set();
+    const Q=[];
+    for(const s of sources){ const c=G.cells[s]; const x=s%G.W, y=(s/G.W)|0; Q.push({x:x,y:y,dir:c.dir}); }
+
+    let safety=0;
+    while(Q.length && safety<30000){
+      safety++;
+      const b=Q.shift();
+      const key=b.x+','+b.y+','+b.dir; if(visited.has(key)) continue; visited.add(key);
+      let x=b.x, y=b.y, d=b.dir;
+      // avancer step by step jusqu'à impact
+      while(true){
+        const nx=x+DIRS[d][0], ny=y+DIRS[d][1];
+        if(nx<0||ny<0||nx>=G.W||ny>=G.H){ rays.push({x,y,nx,ny}); break; }
+        const cell=G.cells[idx(nx,ny)];
+        rays.push({x,y,nx,ny});
+        if(cell.t===T.WALL||cell.t===T.BLOCK){ break; }
+        if(cell.t===T.TARGET){ litTargets.add(idx(nx,ny)); /* continue */ }
+        if(cell.t===T.MIRROR){ // réflexion
+          if(cell.rot===0){ d = (d===N?E : d===E?N : d===S?O : S); }
+          else { d = (d===N?O : d===O?N : d===S?E : E); }
+          x=nx; y=ny; continue;
+        }
+        if(cell.t===T.SPLITTER){
+          const left = (d+3)%4, right=(d+1)%4;
+          Q.push({x:nx,y:ny,dir:left}); Q.push({x:nx,y:ny,dir:right});
+          x=nx; y=ny; continue; // traverse tout droit
+        }
+        x=nx; y=ny;
+      }
+    }
+  }
+
+  // ===== Rendu =====
+  function draw(){
+    const pad=16; const cellSize=Math.floor(Math.min((cv.width-2*pad)/G.W,(cv.height-2*pad)/G.H));
+    const ox=Math.floor((cv.width-cellSize*G.W)/2), oy=Math.floor((cv.height-cellSize*G.H)/2);
+    ctx.clearRect(0,0,cv.width,cv.height);
+
+    // fond
+    ctx.fillStyle='#0c0f15'; ctx.fillRect(0,0,cv.width,cv.height);
+
+    // grille et tuiles
+    for(let y=0;y<G.H;y++){
+      for(let x=0;x<G.W;x++){
+        const k=idx(x,y); const c=G.cells[k]; const X=ox+x*cellSize, Y=oy+y*cellSize;
+        // case
+        ctx.fillStyle = c.t===T.WALL? '#1b202b' : '#10131a';
+        ctx.strokeStyle='#232839'; ctx.lineWidth=2; roundRect(X+2,Y+2,cellSize-4,cellSize-4,10); ctx.fill(); ctx.stroke();
+        // contenu
+        ctx.save(); ctx.translate(X+cellSize/2, Y+cellSize/2);
+        drawCell(c, cellSize);
+        ctx.restore();
+      }
+    }
+
+    // lasers
+    ctx.save(); ctx.lineCap='round'; ctx.shadowColor='#ff5666'; ctx.shadowBlur=18; ctx.strokeStyle='#ff3b4d'; ctx.lineWidth=Math.max(4,Math.floor(cellSize*0.12));
+    for(const r of rays){ const X1=ox+r.x*cellSize+cellSize/2, Y1=oy+r.y*cellSize+cellSize/2; const X2=ox+r.nx*cellSize+cellSize/2, Y2=oy+r.ny*cellSize+cellSize/2; ctx.beginPath(); ctx.moveTo(X1,Y1); ctx.lineTo(X2,Y2); ctx.stroke(); }
+    ctx.restore();
+
+    // halos sur cibles allumées
+    ctx.save(); ctx.fillStyle='rgba(123,255,156,0.18)';
+    for(const k of litTargets){ const x=k%G.W, y=(k/G.W)|0; const X=ox+x*cellSize, Y=oy+y*cellSize; roundRect(X+2,Y+2,cellSize-4,cellSize-4,10); ctx.fill(); }
+    ctx.restore();
+  }
+
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  function drawCell(c, cell){
+    const lw=Math.max(2, Math.floor(cell*0.08));
+    if(c.t===T.SOURCE){
+      ctx.rotate(c.dir*Math.PI/2);
+      ctx.fillStyle='#ff3b4d'; ctx.beginPath(); ctx.arc(0,0,Math.floor(cell*0.22),0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#ffc0c6'; ctx.beginPath(); ctx.moveTo(0,-cell*0.28); ctx.lineTo(cell*0.36,0); ctx.lineTo(0,cell*0.28); ctx.closePath(); ctx.fill();
+      return;
+    }
+    if(c.t===T.TARGET){
+      ctx.fillStyle='#2a3b31'; ctx.beginPath(); ctx.arc(0,0,Math.floor(cell*0.22),0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#4fd486'; ctx.lineWidth=lw; ctx.beginPath(); ctx.arc(0,0,Math.floor(cell*0.30),0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle='#7bff9c'; ctx.beginPath(); ctx.arc(0,0,Math.floor(cell*0.08),0,Math.PI*2); ctx.fill();
+      return;
+    }
+    if(c.t===T.WALL){
+      ctx.fillStyle='#1b202b'; ctx.fillRect(-cell*0.38,-cell*0.38,cell*0.76,cell*0.76);
+      ctx.strokeStyle='#2d3342'; ctx.lineWidth=2; ctx.strokeRect(-cell*0.4,-cell*0.4,cell*0.8,cell*0.8);
+      return;
+    }
+    if(c.t===T.BLOCK){
+      ctx.fillStyle='#2c1c1f'; ctx.fillRect(-cell*0.34,-cell*0.34,cell*0.68,cell*0.68);
+      ctx.strokeStyle='#5a2e36'; ctx.lineWidth=2; ctx.strokeRect(-cell*0.36,-cell*0.36,cell*0.72,cell*0.72);
+      return;
+    }
+    if(c.t===T.MIRROR){
+      ctx.rotate(c.rot===0?0:Math.PI/2); // 0:'/'; 1:'\'
+      ctx.strokeStyle='#bcd1ff'; ctx.lineWidth=Math.max(3,lw);
+      ctx.beginPath(); ctx.moveTo(-cell*0.32, cell*0.32); ctx.lineTo(cell*0.32, -cell*0.32); ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,.28)'; ctx.beginPath(); ctx.moveTo(-cell*0.28, cell*0.28); ctx.lineTo(cell*0.28, -cell*0.28); ctx.stroke();
+      if(c.locked){ ctx.strokeStyle='#7b5cff'; ctx.lineWidth=2; ctx.strokeRect(-cell*0.36,-cell*0.36,cell*0.72,cell*0.72); }
+      return;
+    }
+    if(c.t===T.SPLITTER){
+      ctx.rotate(c.rot*Math.PI/2);
+      ctx.fillStyle='#33415a'; ctx.beginPath(); ctx.arc(0,0,Math.floor(cell*0.18),0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#d2f0ff'; ctx.lineWidth=Math.max(3,lw);
+      ctx.beginPath(); ctx.moveTo(-cell*0.18,0); ctx.lineTo(cell*0.18,0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-cell*0.18); ctx.lineTo(0,cell*0.18); ctx.stroke();
+      if(c.locked){ ctx.strokeStyle='#7b5cff'; ctx.lineWidth=2; ctx.strokeRect(-cell*0.36,-cell*0.36,cell*0.72,cell*0.72); }
+      return;
+    }
+  }
+
+  function cellFromEvent(ev){ const rect=cv.getBoundingClientRect(); const px=(ev.touches? ev.touches[0].clientX:ev.clientX)-rect.left; const py=(ev.touches? ev.touches[0].clientY:ev.clientY)-rect.top; const pad=16; const cell=Math.floor(Math.min((cv.width-2*pad)/G.W,(cv.height-2*pad)/G.H)); const ox=Math.floor((cv.width-cell*G.W)/2); const oy=Math.floor((cv.height-cell*G.H)/2); const x=Math.floor((px-ox)/cell); const y=Math.floor((py-oy)/cell); if(x<0||y<0||x>=G.W||y>=G.H) return null; return {x,y}; }
+
+  function checkWin(){
+    let ok=true; for(let k=0;k<G.cells.length;k++){ if(G.cells[k].t===T.TARGET && !litTargets.has(k)){ ok=false; break; } }
+    if(ok){ if(best==null||moves<best){ best=moves; saveBest(levelIndex,moves); updateHUD(); }
+      setTimeout(()=>{ if(levelIndex<LEVELS.length-1){ if(confirm('Bravo ! Niveau réussi. Passer au suivant ?')) loadLevel(levelIndex+1); } else { alert('Incroyable ! Tu as terminé les 15 niveaux.'); } }, 60);
+    }
+  }
+
+  // Adaptation canvas
+  function fitCanvas(){ const dpr=Math.min(2,window.devicePixelRatio||1); const Wcss=Math.min(760, Math.floor(window.innerWidth*0.95)); const Hcss=Math.min(760, Math.floor(window.innerHeight*0.72)); cv.width=Math.floor(Wcss*dpr); cv.height=Math.floor(Hcss*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
+  window.addEventListener('resize', ()=>{ fitCanvas(); simulate(); draw(); });
+
+  // Boot
+  function boot(){ populateSelect(); loadLevel(0); fitCanvas(); simulate(); draw(); }
+  boot();
+})();
+</script>
+</body>
+</html>
